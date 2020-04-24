@@ -21,3 +21,4 @@ They introduce you to important concepts and guide you through developing your a
    ug_bootloader
    ug_unity_testing
    ug_thread
+   ug_zigbee

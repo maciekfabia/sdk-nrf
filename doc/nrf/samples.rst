@@ -41,6 +41,13 @@ In addition, the |NCS| provides the following samples that showcase the use of a
 
 .. toctree::
    :maxdepth: 1
+   :caption: Zigbee samples
+   :glob:
+
+   ../../samples/zigbee/*/README
+
+.. toctree::
+   :maxdepth: 1
    :caption: Other samples
    :glob:
 

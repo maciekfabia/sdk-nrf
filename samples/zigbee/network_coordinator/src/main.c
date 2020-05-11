@@ -105,7 +105,8 @@ static void configure_gpio(void)
 
 /**@brief Zigbee stack event handler.
  *
- * @param[in]   bufid   Reference to the Zigbee stack buffer used to pass signal.
+ * @param[in]   bufid   Reference to the Zigbee stack buffer
+ *                      used to pass signal.
  */
 void zboss_signal_handler(zb_bufid_t bufid)
 {
@@ -229,8 +230,7 @@ void main(void)
 
 	LOG_INF("ZBOSS Coordinator example started\n");
 
-	while (1)
-	{
+	while (1) {
 		dk_set_led(RUN_STATUS_LED, (++blink_status) % 2);
 		k_sleep(RUN_LED_BLINK_INTERVAL);
 	}

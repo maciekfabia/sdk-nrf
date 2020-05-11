@@ -2,11 +2,11 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
- 
- /delete-node/ &scratch_partition;
- /delete-node/ &storage_partition;
- 
- &flash0 {
+
+/delete-node/ &scratch_partition;
+/delete-node/ &storage_partition;
+
+&flash0 {
 	partitions {
 		compatible = "fixed-partitions";
 		#address-cells = <1>;

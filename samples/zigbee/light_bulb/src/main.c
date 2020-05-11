@@ -29,7 +29,7 @@
 #define RUN_LED_BLINK_INTERVAL          1000
 
 /* Device endpoint, used to receive light controlling commands. */
-#define HA_DIMMABLE_LIGHT_ENDPOINT		10
+#define HA_DIMMABLE_LIGHT_ENDPOINT      10
 
 /* Version of the application software (1 byte). */
 #define BULB_INIT_BASIC_APP_VERSION     01
@@ -198,8 +198,8 @@ static void button_changed(u32_t button_state, u32_t has_changed)
 		/* Check if endpoint is in identifying mode,
 		 * if not put desired endpoint in identifying mode.
 		 */
-		if (dev_ctx.identify_attr.identify_time
-		    == ZB_ZCL_IDENTIFY_IDENTIFY_TIME_DEFAULT_VALUE) {
+		if (dev_ctx.identify_attr.identify_time ==
+		    ZB_ZCL_IDENTIFY_IDENTIFY_TIME_DEFAULT_VALUE) {
 			LOG_INF("Bulb put in identifying mode");
 			zb_err_code = zb_bdb_finding_binding_target(
 				HA_DIMMABLE_LIGHT_ENDPOINT);
@@ -249,15 +249,15 @@ static void light_bulb_set_brightness(zb_uint8_t brightness_level)
 	u32_t pulse = brightness_level * LED_PWM_PERIOD_US / 255U;
 
 	if (pwm_pin_set_usec(led_pwm_dev, PWM_DK_LED4_CHANNEL,
-			LED_PWM_PERIOD_US, pulse, PWM_DK_LED4_FLAGS)) {
-				LOG_ERR("Pwm led 4 set fails: \n");
-				return;
+			     LED_PWM_PERIOD_US, pulse, PWM_DK_LED4_FLAGS)) {
+		LOG_ERR("Pwm led 4 set fails:\n");
+		return;
 	}
 }
 
 /**@brief Function for setting the light bulb brightness.
-  *
-  * @param[in] new_level   Light bulb brightness value.
+ *
+ * @param[in] new_level   Light bulb brightness value.
  */
 static void level_control_set_value(zb_uint16_t new_level)
 {
@@ -314,7 +314,8 @@ static void on_off_set_value(zb_bool_t on)
 		ZB_FALSE);
 
 	if (on) {
-		level_control_set_value(dev_ctx.level_control_attr.current_level);
+		level_control_set_value(
+			dev_ctx.level_control_attr.current_level);
 	} else {
 		light_bulb_set_brightness(0U);
 	}
@@ -357,7 +358,6 @@ static void bulb_clusters_attr_init(void)
 		dev_ctx.basic_attr.location_id,
 		BULB_INIT_BASIC_LOCATION_DESC,
 		ZB_ZCL_STRING_CONST_SIZE(BULB_INIT_BASIC_LOCATION_DESC));
-
 
 	dev_ctx.basic_attr.ph_env = BULB_INIT_BASIC_PH_ENV;
 
@@ -404,7 +404,7 @@ static zb_void_t zcl_device_cb(zb_bufid_t bufid)
 			bufid,
 			zb_zcl_device_callback_param_t);
 
-	LOG_INF("zcl_device_cb id %hd", device_cb_param->device_cb_id);
+	LOG_INF("%s id %hd", __func__, device_cb_param->device_cb_id);
 
 	/* Set default response value. */
 	device_cb_param->status = RET_OK;
@@ -412,8 +412,11 @@ static zb_void_t zcl_device_cb(zb_bufid_t bufid)
 	switch (device_cb_param->device_cb_id) {
 	case ZB_ZCL_LEVEL_CONTROL_SET_VALUE_CB_ID:
 		LOG_INF("Level control setting to %d",
-			device_cb_param->cb_param.level_control_set_value_param.new_value);
-		level_control_set_value(device_cb_param->cb_param.level_control_set_value_param.new_value);
+			device_cb_param->cb_param.level_control_set_value_param
+				.new_value);
+		level_control_set_value(
+			device_cb_param->cb_param.level_control_set_value_param
+				.new_value);
 		break;
 
 	case ZB_ZCL_SET_ATTR_VALUE_CB_ID:
@@ -423,15 +426,17 @@ static zb_void_t zcl_device_cb(zb_bufid_t bufid)
 			  set_attr_value_param.attr_id;
 
 		if (cluster_id == ZB_ZCL_CLUSTER_ID_ON_OFF) {
-			uint8_t value = device_cb_param->cb_param.set_attr_value_param.values.data8;
+			u8_t value =
+				device_cb_param->cb_param.set_attr_value_param
+					.values.data8;
 
 			LOG_INF("on/off attribute setting to %hd", value);
 			if (attr_id == ZB_ZCL_ATTR_ON_OFF_ON_OFF_ID) {
-				on_off_set_value((zb_bool_t) value);
+				on_off_set_value((zb_bool_t)value);
 			}
 		} else if (cluster_id == ZB_ZCL_CLUSTER_ID_LEVEL_CONTROL) {
-			uint16_t value = device_cb_param->cb_param.
-					 set_attr_value_param.values.data16;
+			u16_t value = device_cb_param->cb_param.
+					set_attr_value_param.values.data16;
 
 			LOG_INF("level control attribute setting to %hd",
 				value);
@@ -441,21 +446,23 @@ static zb_void_t zcl_device_cb(zb_bufid_t bufid)
 			}
 		} else {
 			/* Other clusters can be processed here */
-			LOG_INF("Unhandled cluster attribute id: %d", cluster_id);
+			LOG_INF("Unhandled cluster attribute id: %d",
+				cluster_id);
 		}
 		break;
 
 	default:
 		device_cb_param->status = RET_ERROR;
 		break;
-}
+	}
 
 	LOG_INF("zcl_device_cb status: %hd", device_cb_param->status);
 }
 
 /**@brief Zigbee stack event handler.
  *
- * @param[in]   bufid   Reference to the Zigbee stack buffer used to pass signal.
+ * @param[in]   bufid   Reference to the Zigbee stack buffer
+ *                      used to pass signal.
  */
 void zboss_signal_handler(zb_bufid_t bufid)
 {

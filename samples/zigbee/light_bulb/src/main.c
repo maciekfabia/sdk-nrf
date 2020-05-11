@@ -19,7 +19,7 @@
 #include <dk_buttons_and_leds.h>
 
 #include <zboss_api.h>
-#include <addons/zboss_api_addons.h>
+#include <zboss_api_addons.h>
 #include <zb_mem_config_med.h>
 #include <zigbee_helpers.h>
 #include <zb_error_handler.h>

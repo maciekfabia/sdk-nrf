@@ -94,29 +94,15 @@ menu "Zigbee Log configuration"
 config ZBOSS_ERROR_PRINT_TO_LOG
 	bool "Log ZBOSS errors"
 	default y
-	select ZBOSS_ERROR_TO_STRING_ENABLED
+	select ZIGBEE_ERROR_TO_STRING_ENABLED
 	help
 	  Log ZBOSS errors.
 
-config ZBOSS_ERROR_TO_STRING_ENABLED
+config ZIGBEE_ERROR_TO_STRING_ENABLED
 	bool "Include functions for mapping ZBOSS errors to string"
 	default y
 	help
 	  Include functions for mapping ZBOSS errors to string.
-
-config ZB_ASYNC_TRACE_CONTROL
-	bool "Initialize and flush logger directly from ZBOSS kernel"
-
-config ZB_NRF_TRACE_RX_ENABLE
-	bool "Enable test commands"
-	help
-	  Enable reception of test commands on UART interface (enabled in ZBOSS test configs only)
-
-config ZB_HAVE_USERIAL
-	bool "Enable USB serial interface for ZBOSS CLI"
-
-config ZB_HAVE_SERIAL
-	bool "Enable UART serial interface for ZBOSS CLI"
 
 config ZIGBEE_CLI_LOG_ENABLED
 	bool "Include functions for CLI logging"

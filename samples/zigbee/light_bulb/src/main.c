@@ -488,7 +488,7 @@ void error(void)
 
 	while (true) {
 		/* Spin forever */
-		k_sleep(1000);
+		k_sleep(K_MSEC(1000));
 	}
 }
 
@@ -522,6 +522,6 @@ void main(void)
 
 	while (1) {
 		dk_set_led(RUN_STATUS_LED, (++blink_status) % 2);
-		k_sleep(RUN_LED_BLINK_INTERVAL);
+		k_sleep(K_MSEC(RUN_LED_BLINK_INTERVAL));
 	}
 }

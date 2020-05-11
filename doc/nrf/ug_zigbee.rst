@@ -13,14 +13,14 @@ Introduction
 Zigbee is a portable, low-power software networking protocol that provides connectivity over 802.15.4-based mesh network.
 It also defines an application layer that provides interoperability among all vendors.
 
-In combination with Zephyr RTOS and |NCS|, it allows for easy development of low-power connected solutions.
+In combination with Zephyr RTOS and |NCS|, Zigbee allows for easy development of low-power connected solutions.
 
 .. _zigbee_ug_supported features:
 
 Supported features
 ******************
 
-|zboss_lib| 
+|zboss_lib|
 It includes all mandatory features of the |zigbee_version| specification and provides an Application Programming Interface to access different services.
 The stack comes with the following features:
 
@@ -36,7 +36,7 @@ Required libraries and drivers
 ******************************
 
 |zboss_lib|
-This library is available in |nrfxlib|.
+This library is available in `nrfxlib`_.
 
 The OSIF subsystem acts as the linking layer between the ZBOSS stack and |NCS|.
 It implements a series of functions used by ZBOSS and is included in the |NCS|'s Zigbee subsystem.
@@ -44,7 +44,7 @@ It implements a series of functions used by ZBOSS and is included in the |NCS|'s
 Configuration
 *************
 
-To use the Zigbee protocol, set the ``CONFIG_ZIGBEE`` Kconfig option.
+To use the Zigbee protocol, set the :option:`CONFIG_ZIGBEE` Kconfig option.
 Setting this option enables all the peripherals required for the correct operation of the Zigbee protocol and allows you to use them.
 
 After that, you have to define the Zigbee device role for the Zigbee application or sample by setting one of the following Kconfig options:
@@ -59,29 +59,21 @@ This is needed because end devices use different libraries than routers and coor
 Additional options
 ==================
 
-After enabling the Zigbee protocol and defining the Zigbee device role, you can configure additional options in Kconfig.
+After enabling the Zigbee protocol and defining the Zigbee device role, you can enable additional options in Kconfig and modify `Stack configuration options`_.
 
 You can enable the following additional configuration options:
 
 * One of the following alternative options for selecting the channel on which the Zigbee device can operate:
-    
+
     * :option:`CONFIG_ZIGBEE_CHANNEL_SELECTION_MODE_SINGLE` - Single mode is enabled by default.
       The default channel is set to 16.
-      To set a different channel, edit the following option to the desired value:
-        
-        * :option:`CONFIG_ZIGBEE_CHANNEL`
-        
+      To set a different channel, edit the :option:`CONFIG_ZIGBEE_CHANNEL` option to the desired value.
     * :option:`CONFIG_ZIGBEE_CHANNEL_SELECTION_MODE_MULTI` - In this mode, you get all the channels enabled by default.
-      To configure a custom set of channels in the range from 11 to 26, edit the following option:
-        
-        * :option:`CONFIG_ZIGBEE_CHANNEL_MASK`
-    
+      To configure a custom set of channels in the range from 11 to 26, edit the :option:`CONFIG_ZIGBEE_CHANNEL_MASK` option.
       For example, you can set channels 13, 16, and 21.
       You must have at least one channel enabled with this option.
 * :option:`CONFIG_ZIGBEE_VENDOR_OUI` - Represents MAC Address Block Large, and by default it is set to Nordic Semiconductor's MA-L block (f4-ce-36).
 * :option:`CONFIG_ZIGBEE_CLI_LOG_ENABLED` - Enables logging of the incoming ZCL frames, and it is enabled by default.
-
-Moreover, you can modify `Stack configuration options`_.
 
 Stack configuration options
 ---------------------------
@@ -101,16 +93,16 @@ Custom logging per module
 -------------------------
 
 Logging is handled with Zephyr's ``CONFIG_LOG`` option.
-This option enables logging for both the stack and Zephyr's :ref:`zephyr:logger`.
+This option enables logging for both the stack and Zephyr's :ref:`zephyr:logger` API.
 
 Stack logs
 ~~~~~~~~~~
 
-The stack logs are indepentent from Zephyr's :ref:`zephyr:logger`.
+The stack logs are indepentent from Zephyr's :ref:`zephyr:logger` API.
 To customize them, use the following options:
 
 * :option:`CONFIG_ZBOSS_ERROR_PRINT_TO_LOG` - Allows ZBOSS to log its errors; enabled by default.
-* :option:`CONFIG_ZBOSS_TRACE_MASK` - Sets modules from which ZBOSS logs the debug messages with :option:`CONFIG_ZBOSS_TRACE_LOG_LEVEL`; no module is set by default.
+* :option:`CONFIG_ZBOSS_TRACE_MASK` - Sets the modules from which ZBOSS will log the debug messages with :option:`CONFIG_ZBOSS_TRACE_LOG_LEVEL`; no module is set by default.
 * :option:`CONFIG_ZB_ASYNC_TRACE_CONTROL` - Allows ZBOSS to initialize and flush logger.
 
 Zephyr's logger options
@@ -140,6 +132,6 @@ For example, setting :option:`CONFIG_ZBOSS_TRACE_LOG_LEVEL_INF` will enable logg
 Available drivers, libraries, and samples
 *****************************************
 
-See :ref:`samples` for the list of available Zigbee samples.
+See :ref:`zigbee_samples` for the list of available Zigbee samples.
 
 .. |zboss_lib| replace:: The |NCS|'s Zigbee protocol uses the ZBOSS library, a third-party precompiled Zigbee stack.

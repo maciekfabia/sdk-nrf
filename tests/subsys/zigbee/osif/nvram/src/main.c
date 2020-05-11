@@ -18,8 +18,8 @@
 
 #define PHYSICAL_PAGE_SIZE 0x1000 /* For nvram in nrf5 products */
 
-BUILD_ASSERT_MSG((ZBOSS_NVRAM_PAGE_SIZE % PHYSICAL_PAGE_SIZE) == 0,
-		 "The size must be a multiply of physical page size.");
+BUILD_ASSERT((ZBOSS_NVRAM_PAGE_SIZE % PHYSICAL_PAGE_SIZE) == 0,
+	     "The size must be a multiply of physical page size.");
 
 static char zb_nvram_buf[PAGE_SIZE];
 

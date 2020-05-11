@@ -99,7 +99,7 @@ void zb_trans_hw_init(void)
 	 */
 	/*(void)nrf_802154_sleep(); */
 	(void)nrf_802154_continuous_carrier();
-	k_sleep(1);
+	k_sleep(K_MSEC(1));
 	(void)nrf_802154_receive();
 
 	k_fifo_init(&rx_fifo);

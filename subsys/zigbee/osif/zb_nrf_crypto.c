@@ -12,7 +12,7 @@
 #include "nrf_ecb_driver.h"
 
 #if !defined(CONFIG_ENTROPY_HAS_DRIVER)
-#error Entropy driver required for cryptographically secure random number support
+#error Entropy driver required for secure random number support
 #endif
 
 LOG_MODULE_DECLARE(zboss_osif, CONFIG_ZBOSS_OSIF_LOG_LEVEL);

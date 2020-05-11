@@ -15,16 +15,17 @@ static volatile atomic_t is_sleeping = ATOMIC_INIT(0);
 
 
 /**
-   SoC sleep subsystem initialization
-*/
+ *  SoC sleep subsystem initialization
+ */
 void zb_osif_sleep_init(void)
 {
 }
 
-/**@brief Function which tries to put the MMCU into sleep mode, caused by an empty Zigbee stack scheduler queue.
+/**@brief Function which tries to put the MMCU into sleep mode,
+ *        caused by an empty Zigbee stack scheduler queue.
  *
- * Function is defined as weak; to be redefined if someone wants to implement their own
- * going-to-sleep policy.
+ * Function is defined as weak; to be redefined if someone wants
+ * to implement their own going-to-sleep policy.
  */
 __weak zb_uint32_t zb_osif_sleep(zb_uint32_t sleep_tmo)
 {
@@ -35,10 +36,12 @@ __weak zb_uint32_t zb_osif_sleep(zb_uint32_t sleep_tmo)
 	}
 
 #if (ZIGBEE_TRACE_LEVEL != 0)
-	/* In case of trace libraries - the Zigbee stack may generate logs on each loop iteration, resulting in immediate
-     * return from zigbee_event_poll() each time. In such case, Zigbee stack should not be forced to
-     * increment counters. Such solution may break the internal logic of the stack.
-     */
+	/* In case of trace libraries - the Zigbee stack may generate
+	 * logs on each loop iteration, resulting in immediate
+	 * return from zigbee_event_poll() each time. In such case,
+	 * Zigbee stack should not be forced to increment counters.
+	 * Such solution may break the internal logic of the stack.
+	 */
 	ZVUNUSED(time_slept_ms);
 	return ZB_SLEEP_INVALID_VALUE;
 #else
@@ -63,10 +66,12 @@ __weak zb_uint32_t zb_osif_sleep(zb_uint32_t sleep_tmo)
 #endif
 }
 
-/**@brief Function which is called after zb_osif_sleep finished and ZBOSS timer is reenabled.
+/**@brief Function which is called after zb_osif_sleep
+ *        finished and ZBOSS timer is reenabled.
  *
- * Function is defined as weak; to be redefined if someone wants to implement their own
- * going-to-deep-sleep policy/share resources between Zigbee stack and other components.
+ * Function is defined as weak; to be redefined if someone
+ * wants to implement their own going-to-deep-sleep policy/share resources
+ * between Zigbee stack and other components.
  */
 __weak zb_void_t zb_osif_wake_up(void)
 {
@@ -76,7 +81,7 @@ __weak zb_void_t zb_osif_wake_up(void)
 
 zb_bool_t zb_osif_is_sleeping(void)
 {
-	return (atomic_get((atomic_t *)&is_sleeping) ? ZB_TRUE : ZB_FALSE);
+	return atomic_get((atomic_t *)&is_sleeping) ? ZB_TRUE : ZB_FALSE;
 }
 
 #endif /* ZB_USE_SLEEP */

@@ -12,7 +12,7 @@
 
 LOG_MODULE_REGISTER(zboss, LOG_LEVEL_DBG);
 
-void zb_osif_serial_init()
+void zb_osif_serial_init(void)
 {
 }
 
@@ -25,6 +25,7 @@ void zb_osif_serial_put_bytes(zb_uint8_t *buf, zb_short_t len)
 
 	while (len) {
 		zb_int_t n = 8 - buffered;
+
 		if (n > len) {
 			n = len;
 		}
@@ -49,7 +50,7 @@ void zb_osif_set_uart_byte_received_cb(zb_osif_uart_byte_received_cb_t cb)
 /*------legacy end-------*/
 
 
-void zb_osif_serial_flush()
+void zb_osif_serial_flush(void)
 {
 	if (buffered) {
 		LOG_HEXDUMP_DBG(buf8, buffered, "");

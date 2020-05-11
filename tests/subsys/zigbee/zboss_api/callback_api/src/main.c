@@ -25,7 +25,8 @@ static u32_t zboss_signals_collected;
 
 /**@brief Zigbee stack event handler.
  *
- * @param[in]   bufid   Reference to the Zigbee stack buffer used to pass signal.
+ * @param[in]   bufid   Reference to the Zigbee stack buffer
+ *                      used to pass signal.
  */
 void zboss_signal_handler(zb_bufid_t bufid)
 {
@@ -44,8 +45,8 @@ void zboss_signal_handler(zb_bufid_t bufid)
 
 	case ZB_COMMON_SIGNAL_CAN_SLEEP:
 		/* Enter poll so other tasks may be processed.
-		   This should be the third and the last startup signal. 
-		*/
+		 * This should be the third and the last startup signal.
+		 */
 		k_sem_give(&zboss_init_lock);
 		zb_sleep_now();
 		break;
@@ -62,7 +63,8 @@ void zboss_signal_handler(zb_bufid_t bufid)
 	}
 }
 
-void test_zboss_startup_signals(void){
+void test_zboss_startup_signals(void)
+{
 	zboss_signals_collected = 0;
 
 	/*
@@ -76,13 +78,16 @@ void test_zboss_startup_signals(void){
 }
 
 
-K_MSGQ_DEFINE(zb_callback_queue, sizeof(uint32_t), N_THREADS, 4);
+K_MSGQ_DEFINE(zb_callback_queue, sizeof(u32_t), N_THREADS, 4);
 
-void add_to_queue_from_callback(uint8_t int_to_put) {
-	const uint32_t ref_int[N_THREADS] = {0, 1, 2, 3};
+void add_to_queue_from_callback(u8_t int_to_put)
+{
+	const u32_t ref_int[N_THREADS] = {0, 1, 2, 3};
 	int ret_val;
 
-	ret_val = k_msgq_put(&zb_callback_queue, (void *)&ref_int[int_to_put], K_NO_WAIT);
+	ret_val = k_msgq_put(&zb_callback_queue,
+			     (void*)&ref_int[int_to_put],
+			     K_NO_WAIT);
 	__ASSERT(ret_val == 0, "Can not put data into the queue");
 }
 
@@ -95,21 +100,24 @@ void thread_0(void)
 	}
 }
 
-void thread_1(void) {
+void thread_1(void)
+{
 	zigbee_schedule_callback(add_to_queue_from_callback, 1);
 	while (1) {
 		k_sleep(10);
 	}
 }
 
-void thread_2(void) {
+void thread_2(void)
+{
 	zigbee_schedule_callback(add_to_queue_from_callback, 2);
 	while (1) {
 		k_sleep(10);
 	}
 }
 
-void thread_3(void) {
+void thread_3(void)
+{
 	zigbee_schedule_callback(add_to_queue_from_callback, 3);
 	while (1) {
 		k_sleep(10);
@@ -128,27 +136,33 @@ K_THREAD_DEFINE(THREAD_2, STACKSIZE, thread_2, NULL, NULL, NULL,
 K_THREAD_DEFINE(THREAD_3, STACKSIZE, thread_3, NULL, NULL, NULL,
 		PRIORITY, 0, K_FOREVER);
 
-void test_zboss_app_callbacks(void){
-	k_tid_t thread_id_array[N_THREADS] = {THREAD_0, THREAD_1, THREAD_2, THREAD_3};
-	uint8_t expected_queue_usage_cnt = 0;
+void test_zboss_app_callbacks(void)
+{
+	k_tid_t thread_id_array[N_THREADS] = {THREAD_0, THREAD_1,
+					      THREAD_2, THREAD_3};
+	u8_t expected_queue_usage_cnt = 0;
 
-	for (uint8_t i = 0; i < ARRAY_SIZE(thread_id_array); i++) {
+	for (u8_t i = 0; i < ARRAY_SIZE(thread_id_array); i++) {
 		k_thread_start(thread_id_array[i]);
 		expected_queue_usage_cnt++;
 
 		/* Let callback threads to execute. */
 		k_sleep(10);
 
-		zassert_equal(expected_queue_usage_cnt, k_msgq_num_used_get(&zb_callback_queue),
-					 "Queue usage cnt differs from expected usage count.");
+		zassert_equal(
+			expected_queue_usage_cnt,
+			k_msgq_num_used_get(&zb_callback_queue),
+			"Queue usage cnt differs from expected usage count.");
 	}
 
-	for (uint8_t i = 0; i < ARRAY_SIZE(thread_id_array); i++) {
+	for (u8_t i = 0; i < ARRAY_SIZE(thread_id_array); i++) {
 		int data;
 		int err = k_msgq_get(&zb_callback_queue, &data, K_NO_WAIT);
 
-		zassert_equal(err, 0, "Unable to fetch all elements from the queue.");
-		zassert_equal(data, i, "Incorrect element found on the queue.");
+		zassert_equal(err, 0,
+			      "Unable to fetch all elements from the queue.");
+		zassert_equal(data, i,
+			      "Incorrect element found on the queue.");
 	}
 }
 
@@ -161,8 +175,8 @@ void test_main(void)
 	zigbee_enable();
 
 	ztest_test_suite(zboss_api_callback,
-					ztest_unit_test(test_zboss_startup_signals),
-					ztest_unit_test(test_zboss_app_callbacks));
+			 ztest_unit_test(test_zboss_startup_signals),
+			 ztest_unit_test(test_zboss_app_callbacks));
 
 	ztest_run_test_suite(zboss_api_callback);
 }

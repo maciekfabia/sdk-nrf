@@ -49,7 +49,7 @@ static zb_uint8_t           stack_initialised             = ZB_FALSE;
 static zb_uint8_t           is_rejoin_procedure_started   = ZB_FALSE;
 static zb_uint8_t           is_rejoin_stop_requested      = ZB_FALSE;
 static zb_uint8_t           is_rejoin_in_progress         = ZB_FALSE;
-static zb_uint8_t           rejoin_attempt_cnt            = 0;
+static zb_uint8_t           rejoin_attempt_cnt;
 #if defined ZB_ED_ROLE
 static volatile zb_uint8_t  wait_for_user_input           = ZB_FALSE;
 static volatile zb_uint8_t  is_rejoin_start_scheduled     = ZB_FALSE;
@@ -94,13 +94,13 @@ int to_hex_str(char *out, uint16_t out_size, const uint8_t *in,
 int ieee_addr_to_str(char *str_buf, uint16_t buf_len,
 		     const zb_ieee_addr_t addr)
 {
-	return to_hex_str(str_buf, buf_len, (const uint8_t *)addr,
+	return to_hex_str(str_buf, buf_len, (const u8_t *)addr,
 			  sizeof(zb_ieee_addr_t), true);
 }
 
-uint8_t parse_hex_digit(const char c)
+u8_t parse_hex_digit(const char c)
 {
-	uint8_t result = 0xff;
+	u8_t result = 0xff;
 
 	if ((c >= '0') && (c <= '9')) {
 		result = c - '0';
@@ -113,11 +113,11 @@ uint8_t parse_hex_digit(const char c)
 	return result;
 }
 
-bool parse_hex_str(char const *in_str, uint8_t in_str_len,
-		   uint8_t *out_buff, uint8_t out_buff_size, bool reverse)
+bool parse_hex_str(char const *in_str, u8_t in_str_len, u8_t *out_buff,
+		   u8_t out_buff_size, bool reverse)
 {
-	uint8_t i = 0;
-	int8_t delta = 1;
+	u8_t i = 0;
+	s8_t delta = 1;
 
 	/* Skip 0x suffix if present. */
 	if ((in_str_len > 2) && (in_str[0] == '0') &&
@@ -139,7 +139,8 @@ bool parse_hex_str(char const *in_str, uint8_t in_str_len,
 	memset(out_buff, 0, out_buff_size);
 
 	while (i < in_str_len) {
-		uint8_t nibble = parse_hex_digit(*in_str);
+		u8_t nibble = parse_hex_digit(*in_str);
+
 		if (nibble > 0x0f) {
 			break;
 		}
@@ -177,14 +178,14 @@ addr_type_t parse_address(const char *input, zb_addr_u *addr,
 	if ((len == 2 * sizeof(zb_ieee_addr_t)) &&
 	    (addr_type == ADDR_ANY || addr_type == ADDR_LONG)) {
 		result = ADDR_LONG;
-	} else if ((len == 2 * sizeof(uint16_t)) &&
+	} else if ((len == 2 * sizeof(u16_t)) &&
 		   (addr_type == ADDR_ANY || addr_type == ADDR_SHORT)) {
 		result = ADDR_SHORT;
 	} else {
 		return ADDR_INVALID;
 	}
 
-	return parse_hex_str(input, len, (uint8_t *)addr, len / 2, true) ?
+	return parse_hex_str(input, len, (u8_t *)addr, len / 2, true) ?
 			     result :
 			     ADDR_INVALID;
 }
@@ -211,12 +212,10 @@ zb_ret_t zigbee_default_signal_handler(zb_bufid_t bufid)
 		 *       (e.g. assert on the signal status code).
 		 */
 		if (status != RET_OK) {
-			LOG_INF(
-				"Production configuration is not present or invalid (status: %d)",
+			LOG_INF("Production configuration is not present or invalid (status: %d)",
 				status);
 		} else {
-			LOG_INF(
-				"Production configuration successfully loaded");
+			LOG_INF("Production configuration successfully loaded");
 		}
 		break;
 
@@ -260,8 +259,7 @@ zb_ret_t zigbee_default_signal_handler(zb_bufid_t bufid)
 					ZB_BDB_NETWORK_FORMATION);
 			}
 		} else {
-			LOG_ERR(
-				"Failed to initialize Zigbee stack (status: %d)",
+			LOG_ERR("Failed to initialize Zigbee stack (status: %d)",
 				status);
 		}
 		break;
@@ -272,9 +270,9 @@ zb_ret_t zigbee_default_signal_handler(zb_bufid_t bufid)
 		 * configuration stored inside NVRAM, so the device
 		 * will try to rejoin.
 		 *
-		 * Next step: if the device implement Zigbee router or end device,
-		 *            and the initialization has failed, perform network
-		 *            steering for a node on a network,
+		 * Next step: if the device implement Zigbee router or
+		 *            end device, and the initialization has failed,
+		 *            perform network steering for a node on a network,
 		 *            (see BDB specification section 8.2).
 		 */
 		if (status == RET_OK) {
@@ -344,7 +342,7 @@ zb_ret_t zigbee_default_signal_handler(zb_bufid_t bufid)
 			/* Device has joined the network so stop the network
 			 * rejoin procedure.
 			 */
-			if (role != ZB_NWK_DEVICE_TYPE_COORDINATOR){
+			if (role != ZB_NWK_DEVICE_TYPE_COORDINATOR) {
 				stop_network_rejoin(ZB_FALSE);
 			}
 		} else {
@@ -353,8 +351,7 @@ zb_ret_t zigbee_default_signal_handler(zb_bufid_t bufid)
 					status);
 				start_network_rejoin();
 			} else {
-				LOG_INF(
-					"Network steering failed on Zigbee coordinator (status: %d)",
+				LOG_INF("Network steering failed on Zigbee coordinator (status: %d)",
 					status);
 			}
 		}
@@ -401,10 +398,12 @@ zb_ret_t zigbee_default_signal_handler(zb_bufid_t bufid)
 				ZB_BDB_NETWORK_STEERING);
 		} else {
 			LOG_INF("Restart network formation (status: %d)",
-				 status);
+				status);
 			ret_code = ZB_SCHEDULE_APP_ALARM(
-				(zb_callback_t)bdb_start_top_level_commissioning,
-				ZB_BDB_NETWORK_FORMATION, ZB_TIME_ONE_SECOND);
+				(zb_callback_t)
+					bdb_start_top_level_commissioning,
+				ZB_BDB_NETWORK_FORMATION,
+				ZB_TIME_ONE_SECOND);
 		}
 		break;
 
@@ -421,7 +420,8 @@ zb_ret_t zigbee_default_signal_handler(zb_bufid_t bufid)
 		if (status == RET_OK) {
 			zb_zdo_signal_leave_params_t *leave_params =
 				ZB_ZDO_SIGNAL_GET_PARAMS(
-					sig_hndler, zb_zdo_signal_leave_params_t);
+					sig_hndler,
+					zb_zdo_signal_leave_params_t);
 			LOG_INF("Network left (leave type: %d)",
 				leave_params->leave_type);
 			/* Start network rejoin procedure */
@@ -434,30 +434,29 @@ zb_ret_t zigbee_default_signal_handler(zb_bufid_t bufid)
 #endif
 		break;
 
-	case ZB_ZDO_SIGNAL_LEAVE_INDICATION:
+	case ZB_ZDO_SIGNAL_LEAVE_INDICATION: {
 		/* This signal is generated on the parent to indicate, that one
 		 * of its child nodes left the network.
 		 */
-		{
-			zb_zdo_signal_leave_indication_params_t
-				*leave_ind_params = ZB_ZDO_SIGNAL_GET_PARAMS(
-					sig_hndler,
-					zb_zdo_signal_leave_indication_params_t);
-			char ieee_addr_buf[IEEE_ADDR_BUF_SIZE] = { 0 };
-			int addr_len;
+		zb_zdo_signal_leave_indication_params_t
+			*leave_ind_params = ZB_ZDO_SIGNAL_GET_PARAMS(
+				sig_hndler,
+				zb_zdo_signal_leave_indication_params_t);
+		char ieee_addr_buf[IEEE_ADDR_BUF_SIZE] = { 0 };
+		int addr_len;
 
-			addr_len = ieee_addr_to_str(
-				ieee_addr_buf, sizeof(ieee_addr_buf),
-				leave_ind_params->device_addr);
-			if (addr_len < 0) {
-				strcpy(ieee_addr_buf, "unknown");
-			}
-			LOG_INF(
-				"Child left the network (long: %s, rejoin flag: %d)",
-				ieee_addr_buf,
-				leave_ind_params->rejoin);
+		addr_len = ieee_addr_to_str(
+			ieee_addr_buf, sizeof(ieee_addr_buf),
+			leave_ind_params->device_addr);
+		if (addr_len < 0) {
+			strcpy(ieee_addr_buf, "unknown");
 		}
+		LOG_INF(
+			"Child left the network (long: %s, rejoin flag: %d)",
+			ieee_addr_buf,
+			leave_ind_params->rejoin);
 		break;
+	}
 
 	case ZB_COMMON_SIGNAL_CAN_SLEEP:
 		/* Zigbee stack can enter sleep state. If the application wants
@@ -471,36 +470,37 @@ zb_ret_t zigbee_default_signal_handler(zb_bufid_t bufid)
 		zb_sleep_now();
 		break;
 
-	case ZB_ZDO_SIGNAL_DEVICE_UPDATE:
+	case ZB_ZDO_SIGNAL_DEVICE_UPDATE: {
 		/* This signal notifies the Zigbee Trust center (usually
 		 * implemented on the coordinator node) or parent router
-		 * application once a device joined, rejoined, or left the network.
+		 * application once a device joined, rejoined,
+		 * or left the network.
 		 *
-		 * For more information see table 4.14 of the Zigbee Specification (R21).
+		 * For more information see table 4.14
+		 * of the Zigbee Specification (R21).
 		 */
-		{
-			zb_zdo_signal_device_update_params_t *update_params =
-				ZB_ZDO_SIGNAL_GET_PARAMS(
-					sig_hndler,
-					zb_zdo_signal_device_update_params_t);
-			char ieee_addr_buf[IEEE_ADDR_BUF_SIZE] = { 0 };
-			int addr_len;
+		zb_zdo_signal_device_update_params_t *update_params =
+			ZB_ZDO_SIGNAL_GET_PARAMS(
+				sig_hndler,
+				zb_zdo_signal_device_update_params_t);
+		char ieee_addr_buf[IEEE_ADDR_BUF_SIZE] = { 0 };
+		int addr_len;
 
-			addr_len = ieee_addr_to_str(ieee_addr_buf,
-						    sizeof(ieee_addr_buf),
-						    update_params->long_addr);
-			if (addr_len < 0) {
-				strcpy(ieee_addr_buf, "unknown");
-			}
-			LOG_INF(
-				"Device update received (short: 0x%04hx, long: %s, status: %d)",
-				update_params->short_addr,
-				ieee_addr_buf,
-				update_params->status);
+		addr_len = ieee_addr_to_str(ieee_addr_buf,
+					    sizeof(ieee_addr_buf),
+					    update_params->long_addr);
+		if (addr_len < 0) {
+			strcpy(ieee_addr_buf, "unknown");
 		}
+		LOG_INF(
+			"Device update received (short: 0x%04hx, long: %s, status: %d)",
+			update_params->short_addr,
+			ieee_addr_buf,
+			update_params->status);
 		break;
+	}
 
-	case ZB_ZDO_SIGNAL_DEVICE_ANNCE:
+	case ZB_ZDO_SIGNAL_DEVICE_ANNCE: {
 		/* This signal is generated when a Device Announcement command
 		 * is received by the device. Such packet is generated whenever
 		 * a node joins or rejoins the network, so this signal may be
@@ -508,64 +508,63 @@ zb_ret_t zigbee_default_signal_handler(zb_bufid_t bufid)
 		 *
 		 * Note: since the Device Announcement command is sent to the
 		 *       broadcast address, this method may miss some devices.
-		 *       The complete knowledge about nodes has only the coordinator.
+		 *       The complete knowledge about nodes has only
+		 *       the coordinator.
 		 *
 		 * Note: it may happen, that a device broadcasts the Device
 		 *       Announcement command and is removed by the coordinator
-		 *       afterwards, due to security policy (lack of TCLK exchange).
+		 *       afterwards, due to security policy
+		 *       (lack of TCLK exchange).
 		 */
-		{
-			zb_zdo_signal_device_annce_params_t *dev_annce_params =
-				ZB_ZDO_SIGNAL_GET_PARAMS(
-					sig_hndler,
-					zb_zdo_signal_device_annce_params_t);
-			LOG_INF(
-				"New device commissioned or rejoined (short: 0x%04hx)",
-				dev_annce_params->device_short_addr);
-		}
+		zb_zdo_signal_device_annce_params_t *dev_annce_params =
+			ZB_ZDO_SIGNAL_GET_PARAMS(
+				sig_hndler,
+				zb_zdo_signal_device_annce_params_t);
+		LOG_INF(
+			"New device commissioned or rejoined (short: 0x%04hx)",
+			dev_annce_params->device_short_addr);
 		break;
+	}
 
 #ifndef ZB_ED_ROLE
-	case ZB_ZDO_SIGNAL_DEVICE_AUTHORIZED:
+	case ZB_ZDO_SIGNAL_DEVICE_AUTHORIZED: {
 		/* This signal notifies the Zigbee Trust center application
-		 * (usually implemented on the coordinator node) about authorization
-		 * of a new device in the network.
+		 * (usually implemented on the coordinator node) about
+		 * authorization of a new device in the network.
 		 *
-		 * For Zigbee 3.0 (and newer) devices this signal is generated if:
+		 * For Zigbee 3.0 (and newer) devices this signal
+		 * is generated if:
 		 *  - TCKL exchange procedure was successful
 		 *  - TCKL exchange procedure timed out
 		 *
-		 * If the coordinator allows for legacy devices to join the network
-		 * (enabled by zb_bdb_set_legacy_device_support(1) API call),
-		 * this signal is generated:
+		 * If the coordinator allows for legacy devices to join
+		 * the network (enabled by zb_bdb_set_legacy_device_support(1)
+		 * API call), this signal is generated:
 		 *  - If the parent router generates Update Device command and
 		 *    the joining device does not perform TCLK exchange
 		 *    within timeout.
 		 *  - If the TCLK exchange is successful.
 		 */
-		{
-			zb_zdo_signal_device_authorized_params_t
-				*authorize_params = ZB_ZDO_SIGNAL_GET_PARAMS(
-					sig_hndler,
-					zb_zdo_signal_device_authorized_params_t);
-			char ieee_addr_buf[IEEE_ADDR_BUF_SIZE] = { 0 };
-			int addr_len;
+		zb_zdo_signal_device_authorized_params_t
+			*authorize_params = ZB_ZDO_SIGNAL_GET_PARAMS(
+				sig_hndler,
+				zb_zdo_signal_device_authorized_params_t);
+		char ieee_addr_buf[IEEE_ADDR_BUF_SIZE] = { 0 };
+		int addr_len;
 
-			addr_len =
-				ieee_addr_to_str(ieee_addr_buf,
-						 sizeof(ieee_addr_buf),
-						 authorize_params->long_addr);
-			if (addr_len < 0) {
-				strcpy(ieee_addr_buf, "unknown");
-			}
-			LOG_INF(
-				"Device authorization event received (short: 0x%04hx, long: %s, authorization type: %d, authorization status: %d)",
-				authorize_params->short_addr,
-				ieee_addr_buf,
-				authorize_params->authorization_type,
-				authorize_params->authorization_status);
+		addr_len =
+			ieee_addr_to_str(ieee_addr_buf,
+					 sizeof(ieee_addr_buf),
+					 authorize_params->long_addr);
+		if (addr_len < 0) {
+			strcpy(ieee_addr_buf, "unknown");
 		}
+		LOG_INF("Device authorization event received (short: 0x%04hx, long: %s, authorization type: %d, authorization status: %d)",
+			authorize_params->short_addr, ieee_addr_buf,
+			authorize_params->authorization_type,
+			authorize_params->authorization_status);
 		break;
+	}
 #endif
 
 	case ZB_NWK_SIGNAL_NO_ACTIVE_LINKS_LEFT:
@@ -574,8 +573,10 @@ zb_ret_t zigbee_default_signal_handler(zb_bufid_t bufid)
 		 * communicate only with its children.
 		 *
 		 * Example reasons of signal generation:
-		 *  - The device was brought too far from the rest of the network.
-		 *  - There was a power cut and the whole network suddenly disappeared.
+		 *  - The device was brought too far from the rest
+		 *    of the network.
+		 *  - There was a power cut and the whole network
+		 *    suddenly disappeared.
 		 *
 		 * Note: This signal is not generated for the coordinator node,
 		 *       since it may operate alone in the network.
@@ -585,32 +586,32 @@ zb_ret_t zigbee_default_signal_handler(zb_bufid_t bufid)
 
 	case ZB_BDB_SIGNAL_FINDING_AND_BINDING_TARGET_FINISHED:
 		/* This signal informs the Finding & Binding target device that
-		 * the procedure has finished and the other device has been bound
-		 * or the procedure timed out.
+		 * the procedure has finished and the other device has
+		 * been bound or the procedure timed out.
 		 */
 		LOG_INF("Find and bind target finished (status: %d)", status);
 		break;
 
 #ifndef ZB_ED_ROLE
-	case ZB_NWK_SIGNAL_PANID_CONFLICT_DETECTED:
+	case ZB_NWK_SIGNAL_PANID_CONFLICT_DETECTED: {
 		/* This signal informs the Router and Coordinator that conflict
 		 * PAN ID has been detected and needs to be resolved. In order
 		 * to do that *zb_start_pan_id_conflict_resolution* is called.
 		 */
-		{
-			LOG_INF("PAN ID conflict detected, trying to resolve. ");
+		LOG_INF("PAN ID conflict detected, trying to resolve. ");
 
-			zb_bufid_t buf_copy = zb_buf_get_out();
-			if (buf_copy) {
-				zb_buf_copy(buf_copy, bufid);
-				ZVUNUSED(ZB_ZDO_SIGNAL_CUT_HEADER(buf_copy));
+		zb_bufid_t buf_copy = zb_buf_get_out();
 
-				zb_start_pan_id_conflict_resolution(buf_copy);
-			} else {
-				LOG_ERR("No free buffer available, skipping conflict resolving this time.");
-			}
+		if (buf_copy) {
+			zb_buf_copy(buf_copy, bufid);
+			ZVUNUSED(ZB_ZDO_SIGNAL_CUT_HEADER(buf_copy));
+
+			zb_start_pan_id_conflict_resolution(buf_copy);
+		} else {
+			LOG_ERR("No free buffer available, skipping conflict resolving this time.");
 		}
 		break;
+	}
 #endif
 
 	case ZB_ZDO_SIGNAL_DEFAULT_START:
@@ -637,7 +638,7 @@ zb_ret_t zigbee_default_signal_handler(zb_bufid_t bufid)
 	return ret_code;
 }
 
-void zigbee_led_status_update(zb_bufid_t bufid, uint32_t led_idx)
+void zigbee_led_status_update(zb_bufid_t bufid, u32_t led_idx)
 {
 	zb_zdo_app_signal_hdr_t *p_sg_p = NULL;
 	zb_zdo_app_signal_type_t sig = zb_get_app_signal(bufid, &p_sg_p);
@@ -690,9 +691,9 @@ static void rejoin_the_network(zb_uint8_t param)
 			LOG_INF("Network rejoin procedure stopped.");
 #endif
 		} else if (!is_rejoin_in_progress) {
-
 			/* Calculate new timeout */
 			zb_time_t timeout_s;
+
 			if ((1 << rejoin_attempt_cnt) > REJOIN_INTERVAL_MAX_S) {
 				timeout_s = REJOIN_INTERVAL_MAX_S;
 			} else {
@@ -703,10 +704,11 @@ static void rejoin_the_network(zb_uint8_t param)
 			zb_ret_t zb_err_code = ZB_SCHEDULE_APP_ALARM(
 				start_network_steering,
 				ZB_FALSE,
-				ZB_MILLISECONDS_TO_BEACON_INTERVAL(timeout_s * 1000));
+				ZB_MILLISECONDS_TO_BEACON_INTERVAL(timeout_s *
+								   1000));
 			ZB_ERROR_CHECK(zb_err_code);
 
-			is_rejoin_in_progress= ZB_TRUE;
+			is_rejoin_in_progress = ZB_TRUE;
 		}
 	}
 }
@@ -716,22 +718,23 @@ static void rejoin_the_network(zb_uint8_t param)
  * @note  For Router device if stack is initialised, device is not joined
  *        and rejoin procedure is not running, start rejoin procedure.
  *
- * @note  For End Device if stack is initialised, rejoin procedure is not running,
- *        device is not joined and device is not waiting for the user input,
- *        start rejoin procedure. Additionally, schedule alarm to stop rejoin
- *        procedure after the timeout defined by ZB_DEV_REJOIN_TIMEOUT_MS.
+ * @note  For End Device if stack is initialised, rejoin procedure
+ *        is not running, device is not joined and device is not waiting
+ *        for the user input, start rejoin procedure. Additionally,
+ *        schedule alarm to stop rejoin procedure after the timeout
+ *        defined by ZB_DEV_REJOIN_TIMEOUT_MS.
  */
 static void start_network_rejoin(void)
 {
 #if defined ZB_ED_ROLE
-	if (!ZB_JOINED() && stack_initialised && !wait_for_user_input){
+	if (!ZB_JOINED() && stack_initialised && !wait_for_user_input) {
 #elif defined ZB_ROUTER_ROLE
-	if (!ZB_JOINED() && stack_initialised){
+	if (!ZB_JOINED() && stack_initialised) {
 #endif
 		is_rejoin_in_progress = ZB_FALSE;
 
 		if (!is_rejoin_procedure_started) {
-			is_rejoin_procedure_started  	= ZB_TRUE;
+			is_rejoin_procedure_started   = ZB_TRUE;
 			is_rejoin_stop_requested      = ZB_FALSE;
 			is_rejoin_in_progress         = ZB_FALSE;
 			rejoin_attempt_cnt            = 0;
@@ -743,7 +746,8 @@ static void start_network_rejoin(void)
 			zb_ret_t zb_err_code = ZB_SCHEDULE_APP_ALARM(
 				stop_network_rejoin,
 				ZB_TRUE,
-				ZB_MILLISECONDS_TO_BEACON_INTERVAL(ZB_DEV_REJOIN_TIMEOUT_MS));
+				ZB_MILLISECONDS_TO_BEACON_INTERVAL(
+					ZB_DEV_REJOIN_TIMEOUT_MS));
 			ZB_ERROR_CHECK(zb_err_code);
 #endif
 
@@ -752,7 +756,8 @@ static void start_network_rejoin(void)
 	}
 }
 
-/**@brief Function for stopping rejoin network procedure and related scheduled alarms.
+/**@brief Function for stopping rejoin network procedure
+ *        and related scheduled alarms.
  *
  * @param[in] was_scheduled   Zigbee flag to indicate if the function
  *                            was scheduled or called directly.
@@ -834,13 +839,16 @@ static void start_network_rejoin_ED(zb_uint8_t param)
 	is_rejoin_start_scheduled = ZB_FALSE;
 }
 
-/* Function to be called by an application e.g. inside button handler function */
+/* Function to be called by an application
+ * e.g. inside button handler function
+ */
 void user_input_indicate(void)
 {
 	if (wait_for_user_input && !(is_rejoin_start_scheduled)) {
 		zb_ret_t zb_err_code = RET_OK;
 
-		zb_err_code = zigbee_schedule_callback(start_network_rejoin_ED, 0);
+		zb_err_code =
+			zigbee_schedule_callback(start_network_rejoin_ED, 0);
 		ZB_ERROR_CHECK(zb_err_code);
 
 		/* Prevent scheduling multiple rejoin starts */

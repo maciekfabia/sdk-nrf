@@ -10,10 +10,17 @@
 
 #define ECB_PERIPH NRF_ECB
 
-static u8_t ecb_data[48];    ///< ECB data structure for RNG peripheral to access.
-static u8_t *ecb_key;        ///< Key:        Starts at ecb_data
-static u8_t *ecb_cleartext;  ///< Cleartext:  Starts at ecb_data + 16 bytes.
-static u8_t *ecb_ciphertext; ///< Ciphertext: Starts at ecb_data + 32 bytes.
+/* ECB data structure for RNG peripheral to access. */
+static u8_t ecb_data[48];
+
+/* Key: Starts at ecb_data */
+static u8_t *ecb_key;
+
+/* Cleartext:  Starts at ecb_data + 16 bytes. */
+static u8_t *ecb_cleartext;
+
+/* Ciphertext: Starts at ecb_data + 32 bytes. */
+static u8_t *ecb_ciphertext;
 
 int nrf_ecb_driver_init(void)
 {
@@ -57,4 +64,3 @@ void nrf_ecb_driver_set_key(const u8_t *key)
 	}
 	memcpy(ecb_key, key, 16);
 }
-

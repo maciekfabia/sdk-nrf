@@ -7,7 +7,6 @@
 /**
  * @file
  * @brief   ECB Driver ported from nRF5 SDK.
- * @todo    Refactor to implement Zephyr Crypto Cipher API defined in include/crypto/cipher.h
  */
 
 #ifndef NRF_ECB_DRIVER_H__
@@ -31,8 +30,8 @@ int nrf_ecb_driver_init(void);
 /**
  * @brief Function for encrypting 16-byte data using current key.
  *
- * This function avoids unnecessary copying of data if the parameters point to the
- * correct locations in the ECB data structure.
+ * This function avoids unnecessary copying of data if the parameters
+ * point to the correct locations in the ECB data structure.
  *
  * @param dst Result of encryption, 16 bytes will be written.
  * @param src Source with 16-byte data to be encrypted.
@@ -53,4 +52,3 @@ void nrf_ecb_driver_set_key(const u8_t *key);
 #endif
 
 #endif  /* NRF_ECB_DRIVER_H__ */
-

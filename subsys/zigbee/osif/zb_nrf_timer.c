@@ -24,7 +24,8 @@ typedef struct {
 	volatile atomic_t is_running;
 } zb_timer_t;
 
-static zb_timer_t zb_timer = { .is_init = ZB_FALSE, .is_running = ATOMIC_INIT(0) };
+static zb_timer_t zb_timer =
+	{ .is_init = ZB_FALSE, .is_running = ATOMIC_INIT(0) };
 
 /* Forward declaration, dependency to ZBOSS */
 zb_void_t zb_osif_zboss_timer_tick(void);
@@ -94,7 +95,8 @@ void zb_osif_timer_start(void)
 
 zb_bool_t zb_osif_timer_is_on(void)
 {
-	return (atomic_get((atomic_t *)&zb_timer.is_running) ? ZB_TRUE : ZB_FALSE);
+	return atomic_get((atomic_t *)&zb_timer.is_running)
+		? ZB_TRUE : ZB_FALSE;
 }
 
 /*
@@ -112,7 +114,8 @@ zb_uint32_t zb_osif_timer_get(void)
 	if (zb_osif_timer_is_on() == ZB_TRUE) {
 		u32_t ticks;
 		(void)counter_get_value(zb_timer.device, &ticks);
-		time_cur = (zb_uint32_t)counter_ticks_to_us(zb_timer.device, ticks);
+		time_cur = (zb_uint32_t)counter_ticks_to_us(zb_timer.device,
+							    ticks);
 	} else {
 		time_cur = 0;
 	}
@@ -123,7 +126,8 @@ zb_uint32_t zb_osif_timer_get(void)
 
 /*
  * Get current time, us.
- * TODO: Remove this wrapper and the zb_timer_get_value() should be used directly.
+ * TODO: Remove this wrapper and the zb_timer_get_value()
+ *       should be used directly.
  */
 zb_time_t osif_transceiver_time_get(void)
 {

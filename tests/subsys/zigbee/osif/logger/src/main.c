@@ -23,22 +23,26 @@ static void test_logger(void)
 {
 	s32_t i;
 
-	zb_osif_serial_put_bytes(test_logger_data, ARRAY_SIZE(test_logger_data));
+	zb_osif_serial_put_bytes(test_logger_data,
+				 ARRAY_SIZE(test_logger_data));
 	zb_osif_serial_flush();
 
-	zassert_equal(log_mock_get_buf_len(), ARRAY_SIZE(test_logger_data), "data length error");
+	zassert_equal(log_mock_get_buf_len(),
+		      ARRAY_SIZE(test_logger_data),
+		      "data length error");
 
-	for(i = 0; i < log_mock_get_buf_len(); i++){
-		zassert_equal(log_mock_get_buf_data(i), test_logger_data[i], "data compare error");
+	for (i = 0; i < log_mock_get_buf_len(); i++) {
+		zassert_equal(log_mock_get_buf_data(i),
+			      test_logger_data[i],
+			      "data compare error");
 	}
 }
 
 void test_main(void)
 {
 	ztest_test_suite(nrf_osif_logger_tests,
-			ztest_unit_test(test_logger)
+			 ztest_unit_test(test_logger)
 	);
 
 	ztest_run_test_suite(nrf_osif_logger_tests);
 }
-

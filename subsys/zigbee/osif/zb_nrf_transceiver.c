@@ -23,7 +23,7 @@ LOG_MODULE_DECLARE(zboss_osif, CONFIG_ZBOSS_OSIF_LOG_LEVEL);
 
 /* Definition of FIFO queue entry for the received frame */
 typedef struct nrf_802154_rx_frame {
-	void	*fifo_reserved; /* 1st word reserved for the kernel’s use. */
+	void	*fifo_reserved; /* 1st word reserved for the kernel's use. */
 	u8_t	*data; /* Pointer to a received frame. */
 	s8_t	power; /* Last received frame RSSI value. */
 	u8_t	lqi; /* Last received frame LQI value. */
@@ -31,7 +31,9 @@ typedef struct nrf_802154_rx_frame {
 	bool	pending_bit;
 } rx_frame_t;
 
-static struct k_fifo rx_fifo; /* RX fifo queue. */
+/* RX fifo queue. */
+static struct k_fifo rx_fifo;
+
 /* Array of pointers to received frames and their metadata.
  *
  * Keep one additional element in case a new frame is received after
@@ -39,27 +41,30 @@ static struct k_fifo rx_fifo; /* RX fifo queue. */
  * is set back to NULL.
  */
 static rx_frame_t rx_frames[NRF_802154_RX_BUFFERS + 1];
+
 static struct {
-	struct k_sem sem; /* Semaphore for waiting for end of energy detection procedure. */
-	volatile bool failed; /* Energy detection procedure failed. */
+	/* Semaphore for waiting for end of energy detection procedure. */
+	struct k_sem sem;
+	volatile bool failed;   /* Energy detection procedure failed. */
 	volatile u32_t time_us; /* Duration of energy detection procedure. */
 	volatile u8_t rssi_val; /* Detected energy level. */
 } energy_detect;
+
 static volatile bool acked_with_pending_bit;
 
 
 static void nrf5_radio_irq(void *arg)
 {
-  ARG_UNUSED(arg);
+	ARG_UNUSED(arg);
 
-  nrf_802154_radio_irq_handler();
+	nrf_802154_radio_irq_handler();
 }
 
 static void nrf5_irq_config(void)
 {
-  IRQ_CONNECT(RADIO_IRQn, NRF_802154_IRQ_PRIORITY,
-        nrf5_radio_irq, NULL, 0);
-  irq_enable(RADIO_IRQn);
+	IRQ_CONNECT(RADIO_IRQn, NRF_802154_IRQ_PRIORITY, nrf5_radio_irq, NULL,
+		    0);
+	irq_enable(RADIO_IRQn);
 }
 
 /* Initializes the transceiver. */
@@ -67,19 +72,26 @@ void zb_trans_hw_init(void)
 {
 	nrf_802154_init();
 	nrf_802154_auto_ack_set(ZB_TRUE);
-	nrf_802154_src_addr_matching_method_set(NRF_802154_SRC_ADDR_MATCH_ZIGBEE);
+	nrf_802154_src_addr_matching_method_set(
+		NRF_802154_SRC_ADDR_MATCH_ZIGBEE);
 
-	/* WORKAROUND: Send continuous carrier to leave the sleep state and request the HFCLK.
-	 *             Manually wait for HFCLK to synchronize by sleeping for 1 ms afterwards.
+	/* WORKAROUND: Send continuous carrier to leave the sleep state
+	 *             and request the HFCLK.
+	 *             Manually wait for HFCLK to synchronize by sleeping
+	 *             for 1 ms afterwards.
 	 *
-	 * The bug causes the Radio Driver to start transmitting frames while the HFCLK is still starting.
-	 * As a result, the Radio Driver, as well as the ZBOSS, is notified that the frame was sent,
-	 * but it was not, because the analog part of the radio was not working at that time.
-	 * The carrier will not be transmitted for the same reason. It is placed here just to trigger
-	 * the proper set of events in Radio Driver.
+	 * The bug causes the Radio Driver to start transmitting
+	 * frames while the HFCLK is still starting.
+	 * As a result, the Radio Driver, as well as the ZBOSS,
+	 * is notified that the frame was sent, but it was not, because
+	 * the analog part of the radio was not working at that time.
+	 * The carrier will not be transmitted for the same reason.
+	 * It is placed here just to trigger the proper set of events
+	 * in Radio Driver.
 	 *
-	 * Since the coordinator/router/non-sleepy end device does not reenter sleep
-	 * state, it is enough to apply this procedure here. For SED it has to be repeated every time
+	 * Since the coordinator/router/non-sleepy end device does
+	 * not reenter sleep state, it is enough to apply this
+	 * procedure here. For SED it has to be repeated every time
 	 * the Radio leaves sleep state.
 	 *
 	 * More info: https://github.com/zephyrproject-rtos/zephyr/issues/20712
@@ -116,18 +128,20 @@ void zb_trans_set_long_addr(zb_ieee_addr_t long_addr)
 void zb_trans_set_short_addr(zb_uint16_t addr)
 {
 	LOG_DBG("Function: %s, 0x%x", __func__, addr);
-	nrf_802154_short_address_set((uint8_t *)(&addr));
+	nrf_802154_short_address_set((u8_t *)(&addr));
 }
 
 /* Start the energy detection procedure */
 void zb_trans_start_get_rssi(zb_uint8_t scan_duration_bi)
 {
 	energy_detect.failed = false;
-	energy_detect.time_us = ZB_TIME_BEACON_INTERVAL_TO_USEC(scan_duration_bi);
+	energy_detect.time_us = ZB_TIME_BEACON_INTERVAL_TO_USEC(
+		scan_duration_bi);
 
-	LOG_DBG("Function: %s, scan duration: 0x%d", __func__, energy_detect.time_us);
+	LOG_DBG("Function: %s, scan duration: %d", __func__,
+		energy_detect.time_us);
 	k_sem_take(&energy_detect.sem, K_FOREVER);
-	while(!nrf_802154_energy_detection(energy_detect.time_us)) {
+	while (!nrf_802154_energy_detection(energy_detect.time_us)) {
 		k_usleep(500);
 	}
 }
@@ -140,16 +154,16 @@ void zb_trans_get_rssi(zb_uint8_t *rssi_value_p)
 	/*Wait until the ED scan finishes.*/
 	while (1) {
 		k_sem_take(&energy_detect.sem, K_FOREVER);
-		if(energy_detect.failed == false) {
+		if (energy_detect.failed == false) {
 			*rssi_value_p = energy_detect.rssi_val;
 			LOG_DBG("Energy detected: %d", *rssi_value_p);
 			break;
-		} else { /* Try again */
-			LOG_DBG("Energy detect failed, tries again");
-			energy_detect.failed = false;
-			while(!nrf_802154_energy_detection(energy_detect.time_us)) {
-				k_usleep(500);
-			}
+		}
+		/* Try again */
+		LOG_DBG("Energy detect failed, tries again");
+		energy_detect.failed = false;
+		while (!nrf_802154_energy_detection(energy_detect.time_us)) {
+			k_usleep(500);
 		}
 	}
 	k_sem_give(&energy_detect.sem);
@@ -214,7 +228,9 @@ void zb_trans_enter_sleep(void)
 /* Returns ZB_TRUE if radio is in receive state, otherwise ZB_FALSE */
 zb_bool_t zb_trans_is_receiving(void)
 {
-	zb_bool_t is_receiv = (nrf_802154_state_get() == NRF_802154_STATE_RECEIVE) ? ZB_TRUE : ZB_FALSE;
+	zb_bool_t is_receiv =
+		(nrf_802154_state_get() == NRF_802154_STATE_RECEIVE) ?
+			ZB_TRUE : ZB_FALSE;
 
 	LOG_DBG("Function: %s, is receiv: %d", __func__, is_receiv);
 	return is_receiv;
@@ -223,7 +239,9 @@ zb_bool_t zb_trans_is_receiving(void)
 /* Returns ZB_TRUE if radio is ON or ZB_FALSE if is in sleep state. */
 zb_bool_t zb_trans_is_active(void)
 {
-	zb_bool_t is_active = (nrf_802154_state_get() != NRF_802154_STATE_SLEEP) ? ZB_TRUE : ZB_FALSE;
+	zb_bool_t is_active =
+		(nrf_802154_state_get() != NRF_802154_STATE_SLEEP) ?
+			ZB_TRUE : ZB_FALSE;
 
 	LOG_DBG("Function: %s, is active: %d", __func__, is_active);
 	return is_active;
@@ -257,27 +275,12 @@ zb_bool_t zb_trans_transmit(zb_uint8_t wait_type, zb_time_t tx_at,
 #ifdef ZB_ENABLE_ZGP_DIRECT
 	case ZB_MAC_TX_WAIT_ZGP:
 		LOG_ERR("ZB_MAC_TX_WAIT_ZGP - not implemented in osif, TBD");
-//		 transmit_status = (zb_bool_t)nrf_802154_transmit_raw_at(
-//			tx_buf,
-//			0, /* cca */
-//		 /* Our upper layers are already calculatet exact time to transmit. But
-//		  * Nordic radio driver itseld is doing some calculations subtracting from
-//		  * dt parameter. We do not want to change our upper layers, so let's just
-//		  * subtract back from tx_at.
-//		  * We may not care about tx_at overflows: if it overflowed in
-//		  * cgp_data_req() in zgp_stub.c,
-//		  * it goes back gere.
-//		  * Yes, this is ugly, but we must use Nordic API which is not very good
-//		  * for our upper logic.
-//		  */
-//			tx_at - ZB_GPD_TX_OFFSET_US, /* t0 */
-//			ZB_GPD_TX_OFFSET_US, /* dt */
-//			current_channel);
 		break;
 #endif
 	case ZB_MAC_TX_WAIT_NONE:
 		/* First transmit attempt without CCA. */
-		transmit_status = (zb_bool_t) nrf_802154_transmit_raw(tx_buf, ZB_FALSE);
+		transmit_status = (zb_bool_t)nrf_802154_transmit_raw(
+			tx_buf, ZB_FALSE);
 		break;
 	default:
 		LOG_DBG("Illegal wait_type parameter: %d", wait_type);
@@ -287,7 +290,9 @@ zb_bool_t zb_trans_transmit(zb_uint8_t wait_type, zb_time_t tx_at,
 	return transmit_status;
 }
 
-/* Notifies the driver that the buffer containing the received frame is not used anymore */
+/* Notifies the driver that the buffer containing the received frame
+ * is not used anymore
+ */
 void zb_trans_buffer_free(zb_uint8_t *buf)
 {
 	LOG_DBG("Function: %s", __func__);
@@ -300,18 +305,22 @@ zb_bool_t zb_trans_set_pending_bit(zb_uint8_t *addr, zb_bool_t value,
 	LOG_DBG("Function: %s, value: %d", __func__, value);
 	if (value) {
 		return (zb_bool_t)nrf_802154_pending_bit_for_addr_set(
-			(const uint8_t *)addr, (bool)extended);
+			(const u8_t *)addr, (bool)extended);
 	} else {
 		return (zb_bool_t)nrf_802154_pending_bit_for_addr_clear(
-			(const uint8_t *)addr, (bool)extended);
+			(const u8_t *)addr, (bool)extended);
 	}
 }
 
 void zb_trans_src_match_tbl_drop(void)
 {
 	LOG_DBG("Function: %s", __func__);
-	nrf_802154_pending_bit_for_addr_reset(ZB_FALSE); /* reset for short addresses */
-	nrf_802154_pending_bit_for_addr_reset(ZB_TRUE);  /* reset for long addresses */
+
+	/* reset for short addresses */
+	nrf_802154_pending_bit_for_addr_reset(ZB_FALSE);
+
+	/* reset for long addresses */
+	nrf_802154_pending_bit_for_addr_reset(ZB_TRUE);
 }
 
 #ifdef CONFIG_RADIO_STATISTICS
@@ -348,10 +357,13 @@ zb_uint8_t zb_trans_get_next_packet(zb_bufid_t buf)
 	length = rx_frame->data[0];
 
 	data_ptr = zb_buf_initial_alloc(buf, length);
+
 	/*Copy received data*/
 	ZB_MEMCPY(data_ptr, (void const *)(rx_frame->data + 1), length);
+
 	/*Put LQI, RSSI*/
 	zb_macll_metadata_t *metadata = ZB_MACLL_GET_METADATA(buf);
+
 	metadata->lqi = rx_frame->lqi;
 	metadata->power = rx_frame->power;
 	/* Put timestamp (usec) into the packet tail */
@@ -370,27 +382,31 @@ zb_uint8_t zb_trans_get_next_packet(zb_bufid_t buf)
 /**
  * @brief Notify that frame was transmitted.
  *
- * @note If ACK was requested for transmitted frame this function is called after proper ACK is
- *       received. If ACK was not requested this function is called just after transmission is
- *       ended.
- * @note Buffer pointed by the @p ack pointer is not modified by the radio driver (and can't
- *       be used to receive a frame) until @sa nrf_802154_buffer_free_raw() function is
- *       called.
- * @note Buffer pointed by the @p ack pointer may be modified by the function handler (and other
- *       modules) until @sa nrf_802154_buffer_free_raw() function is called.
- * @note The next higher layer should handle @sa nrf_802154_transmitted_raw() or @sa
- *       nrf_802154_transmitted() function. It should not handle both.
+ * @note If ACK was requested for transmitted frame this function
+ *       is called after proper ACK is received.
+ *       If ACK was not requested this function is called just
+ *       after transmission is ended.
+ * @note Buffer pointed by the @p ack pointer is not modified
+ *       by the radio driver (and can't be used to receive a frame)
+ *       until @sa nrf_802154_buffer_free_raw() function is called.
+ * @note Buffer pointed by the @p ack pointer may be modified by
+ *       the function handler (and other modules) until
+ *       @sa nrf_802154_buffer_free_raw() function is called.
+ * @note The next higher layer should handle @sa nrf_802154_transmitted_raw()
+ *       or @sa nrf_802154_transmitted() function. It should not handle both.
  *
- * @param[in]  ack    Pointer to received ACK buffer. Fist byte in the buffer is length of the
- *                    frame (PHR) and following bytes are the ACK frame itself (PSDU). Length byte
- *                    (PHR) includes FCS. FCS is already verified by the hardware and may be
- *                    modified by the hardware.
- *                    If ACK was not requested @p ack is set to NULL.
+ * @param[in]  ack    Pointer to received ACK buffer. Fist byte
+ *                    in the buffer is length of the frame (PHR) and
+ *                    following bytes are the ACK frame itself (PSDU).
+ *                    Length byte (PHR) includes FCS. FCS is already
+ *                    verified by the hardware and may be modified by
+ *                    the hardware. If ACK was not requested @p ack
+ *                    is set to NULL.
  * @param[in]  power  RSSI of received frame or 0 if ACK was not requested.
  * @param[in]  lqi    LQI of received frame or 0 if ACK was not requested.
  */
-void nrf_802154_transmitted_raw(const uint8_t *frame, uint8_t *ack,
-				int8_t power, uint8_t lqi)
+void nrf_802154_transmitted_raw(const u8_t *frame, u8_t *ack,
+				s8_t power, u8_t lqi)
 {
 	ARG_UNUSED(frame);
 	ARG_UNUSED(power);
@@ -414,7 +430,7 @@ void nrf_802154_transmitted_raw(const uint8_t *frame, uint8_t *ack,
  * @param[in]  error  Reason of the failure.
  */
 
-void nrf_802154_transmit_failed(uint8_t const *frame,
+void nrf_802154_transmit_failed(u8_t const *frame,
 				nrf_802154_tx_error_t error)
 {
 	ARG_UNUSED(frame);
@@ -467,7 +483,7 @@ void nrf_802154_transmit_failed(uint8_t const *frame,
 }
 
 /* Callback notifies about the start of the ACK frame transmission. */
-void nrf_802154_tx_ack_started(const uint8_t *data)
+void nrf_802154_tx_ack_started(const u8_t *data)
 {
     /* Check if the frame pending bit is set in ACK frame. */
 	acked_with_pending_bit = data[FRAME_PENDING_OFFSET] & FRAME_PENDING_BIT;
@@ -476,30 +492,34 @@ void nrf_802154_tx_ack_started(const uint8_t *data)
 /**
  * @brief Notify that frame was received.
  *
- * @note Buffer pointed by the data pointer is not modified by the radio driver (and can't
- *       be used to receive a frame) until nrf_802154_buffer_free_raw() function is called.
- * @note Buffer pointed by the data pointer may be modified by the function handler (and other
- *       modules) until @sa nrf_802154_buffer_free_raw() function is called.
- * @note The next higher layer should handle @sa nrf_802154_received_raw() or @sa
- *       nrf_802154_received() function. It should not handle both.
+ * @note Buffer pointed by the data pointer is not modified
+ *       by the radio driver (and can't be used to receive a frame)
+ *       until nrf_802154_buffer_free_raw() function is called.
+ * @note Buffer pointed by the data pointer may be modified by the function
+ *       handler (and other modules) until @sa nrf_802154_buffer_free_raw()
+ *       function is called.
+ * @note The next higher layer should handle @sa nrf_802154_received_raw()
+ *       or @sa nrf_802154_received() function. It should not handle both.
  *
  * data
  * v
- * +-----+-----------------------------------------------------------+------------+
- * | PHR | MAC Header and payload                                    | FCS        |
- * +-----+-----------------------------------------------------------+------------+
- *       |                                                                        |
- *       | <---------------------------- PHR -----------------------------------> |
+ * +-----+---------------------------------------------------+------------+
+ * | PHR | MAC Header and payload                            | FCS        |
+ * +-----+---------------------------------------------------+------------+
+ *       |                                                                |
+ *       | <---------------------------- PHR ---------------------------> |
  *
- * @param[in]  data    Pointer to the buffer containing received data (PHR + PSDU). First byte in
- *                     the buffer is length of the frame (PHR) and following bytes is the frame
- *                     itself (PSDU). Length byte (PHR) includes FCS. FCS is already verified by
- *                     the hardware and may be modified by the hardware.
+ * @param[in]  data    Pointer to the buffer containing received data
+ *                     (PHR + PSDU). First byte in the buffer is length
+ *                     of the frame (PHR) and following bytes is the frame
+ *                     itself (PSDU). Length byte (PHR) includes FCS.
+ *                     FCS is already verified by the hardware and may be
+ *                     modified by the hardware.
  * @param[in]  power   RSSI of received frame.
  * @param[in]  lqi     LQI of received frame.
  */
-void nrf_802154_received_timestamp_raw(uint8_t *data, int8_t power,
-				       uint8_t lqi, uint32_t time)
+void nrf_802154_received_timestamp_raw(u8_t *data, s8_t power,
+				       u8_t lqi, u32_t time)
 {
 #ifdef CONFIG_RADIO_STATISTICS
 	zb_osif_get_radio_stats()->rx_successful++;
@@ -516,7 +536,8 @@ void nrf_802154_received_timestamp_raw(uint8_t *data, int8_t power,
 	}
 
 	if (rx_frame_free_slot == NULL) {
-		__ASSERT(false, "Not enough rx frames allocated for 15.4 driver");
+		__ASSERT(false,
+			 "Not enough rx frames allocated for 15.4 driver");
 		return;
 	}
 
@@ -551,7 +572,6 @@ void nrf_802154_receive_failed(nrf_802154_rx_error_t error)
 	case NRF_802154_RX_ERROR_NONE:
 		zb_osif_get_radio_stats()->rx_err_none++;
 		break;
-
 	case NRF_802154_RX_ERROR_INVALID_FRAME:
 		zb_osif_get_radio_stats()->rx_err_invalid_frame++;
 		break;
@@ -575,7 +595,7 @@ void nrf_802154_receive_failed(nrf_802154_rx_error_t error)
 }
 
 /* Callback notify that Energy Detection procedure finished. */
-void nrf_802154_energy_detected(uint8_t result)
+void nrf_802154_energy_detected(u8_t result)
 {
 	energy_detect.rssi_val = result;
 	k_sem_give(&energy_detect.sem);

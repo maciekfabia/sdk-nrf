@@ -10,9 +10,9 @@
 #include <zephyr/types.h>
 
 void log_mock_hexdump(u8_t *buf, s32_t len, char *s);
-s32_t log_mock_get_buf_len();
+s32_t log_mock_get_buf_len(void);
 s32_t log_mock_get_buf_data(s32_t index);
-void log_mock_clear();
+void log_mock_clear(void);
 
 #ifdef LOG_HEXDUMP_DBG
 #undef LOG_HEXDUMP_DBG
@@ -23,7 +23,5 @@ void log_mock_clear();
 #undef LOG_MODULE_REGISTER
 #endif
 #define LOG_MODULE_REGISTER(...)
-
-
 
 #endif /* LOG_MOCK_H_ */

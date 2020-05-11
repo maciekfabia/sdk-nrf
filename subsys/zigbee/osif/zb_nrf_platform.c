@@ -22,8 +22,9 @@ static struct k_poll_signal zigbee_sig = K_POLL_SIGNAL_INITIALIZER(zigbee_sig);
 
 /** Global mutex to protect access to the ZBOSS global state.
  *
- * @note Functions for locking/unlocking the mutex are called directly from ZBOSS core,
- *       when the main ZBOSS global variable is accessed.
+ * @note Functions for locking/unlocking the mutex are called
+ *       directly from ZBOSS core, when the main ZBOSS global
+ *       variable is accessed.
  */
 static K_MUTEX_DEFINE(zigbee_mutex);
 
@@ -48,7 +49,9 @@ static int zigbee_init(struct device *unused)
 	zb_osif_get_ieee_eui64(ieee_addr);
 	zb_set_long_address(ieee_addr);
 
-	/* Keep or erase NVRAM to save the network parameters after device reboot or power-off. */
+	/* Keep or erase NVRAM to save the network parameters
+	 * after device reboot or power-off.
+	 */
 	zb_set_nvram_erase_at_start(ZB_FALSE);
 
 	/* Set channels on which the coordinator will try
@@ -80,7 +83,7 @@ static void zboss_thread(void *arg1, void *arg2, void *arg3)
 	zb_ret_t zb_err_code;
 
 	zb_err_code = zboss_start_no_autostart();
-	__ASSERT(zb_err_code == RET_OK , "Error when starting ZBOSS stack!");
+	__ASSERT(zb_err_code == RET_OK, "Error when starting ZBOSS stack!");
 
 	while (1) {
 		zboss_main_loop_iteration();
@@ -89,15 +92,14 @@ static void zboss_thread(void *arg1, void *arg2, void *arg3)
 
 
 /**@brief SoC general initialization. */
-void zb_osif_init()
+void zb_osif_init(void)
 {
-	static bool platform_inited = false;
+	static bool platform_inited;
 
 	if (platform_inited) {
 		return;
-	} else {
-		platform_inited = true;
 	}
+	platform_inited = true;
 
 #ifdef CONFIG_ZB_HAVE_SERIAL
 	/* Initialise serial trace */
@@ -133,13 +135,15 @@ zb_void_t zb_reset(zb_uint8_t param)
 
 void zb_osif_enable_all_inter(void)
 {
-	__ASSERT(zb_osif_is_inside_isr() == 0, "Unable to unlock mutex from interrupt context");
+	__ASSERT(zb_osif_is_inside_isr() == 0,
+		 "Unable to unlock mutex from interrupt context");
 	k_mutex_unlock(&zigbee_mutex);
 }
 
 void zb_osif_disable_all_inter(void)
 {
-	__ASSERT(zb_osif_is_inside_isr() == 0, "Unable to lock mutex from interrupt context");
+	__ASSERT(zb_osif_is_inside_isr() == 0,
+		 "Unable to lock mutex from interrupt context");
 	k_mutex_lock(&zigbee_mutex, K_FOREVER);
 }
 
@@ -155,14 +159,16 @@ zb_bool_t zb_osif_is_inside_isr(void)
 
 __weak zb_uint32_t zb_get_utc_time(void)
 {
-	LOG_ERR("Unable to obtain UTC time. Please implement zb_get_utc_time in your application to provide the current UTC time.");
+	LOG_ERR("Unable to obtain UTC time. "
+		"Please implement %s in your application to provide the current UTC time.",
+		__func__);
 	return ZB_TIME_BEACON_INTERVAL_TO_MSEC(ZB_TIMER_GET()) / 1000;
 }
 
 /**@brief Read IEEE long address from FICR registers. */
 void zb_osif_get_ieee_eui64(zb_ieee_addr_t ieee_eui64)
 {
-	uint64_t factoryAddress;
+	u64_t factoryAddress;
 
 	/* Read random address from FICR. */
 	factoryAddress = (uint64_t)NRF_FICR->DEVICEID[0] << 32;
@@ -185,10 +191,10 @@ void zigbee_event_notify(zigbee_event_t event)
 u32_t zigbee_event_poll(u32_t timeout_ms)
 {
 	/* Configure event/signals to wait for in wait_for_event function */
-    static struct k_poll_event wait_events[] = {
+	static struct k_poll_event wait_events[] = {
 		K_POLL_EVENT_INITIALIZER(K_POLL_TYPE_SIGNAL,
-								 K_POLL_MODE_NOTIFY_ONLY,
-								 &zigbee_sig),
+					 K_POLL_MODE_NOTIFY_ONLY,
+					 &zigbee_sig),
 	};
 
 	unsigned int signaled;
@@ -209,11 +215,13 @@ u32_t zigbee_event_poll(u32_t timeout_ms)
 
 void zigbee_enable(void)
 {
-	zboss_tid = k_thread_create(&zboss_thread_data, zboss_stack_area,
-				K_THREAD_STACK_SIZEOF(zboss_stack_area),
-				zboss_thread,
-				NULL, NULL, NULL,
-				CONFIG_ZBOSS_DEFAULT_THREAD_PRIORITY, 0, K_NO_WAIT);
+	zboss_tid = k_thread_create(&zboss_thread_data,
+				    zboss_stack_area,
+				    K_THREAD_STACK_SIZEOF(zboss_stack_area),
+				    zboss_thread,
+				    NULL, NULL, NULL,
+				    CONFIG_ZBOSS_DEFAULT_THREAD_PRIORITY,
+				    0, K_NO_WAIT);
 	k_thread_name_set(&zboss_thread_data, "zboss");
 }
 

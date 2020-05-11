@@ -8,7 +8,7 @@ zephyr_include_directories(common)
 zephyr_include_directories(osif)
 zephyr_include_directories(zb_error)
 
-# Source files 
+# Source files
 zephyr_sources(osif/zb_nrf_platform.c)
 zephyr_sources(osif/zb_nrf_logger.c)
 zephyr_sources(osif/zb_nrf_nvram.c)

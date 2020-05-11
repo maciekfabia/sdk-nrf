@@ -201,7 +201,7 @@ u32_t zigbee_event_poll(u32_t timeout_ms)
 	int result;
 	s64_t time_stamp = k_uptime_get();
 
-	k_poll(wait_events, 1, timeout_ms);
+	k_poll(wait_events, 1, K_MSEC(timeout_ms));
 
 	k_poll_signal_check(&zigbee_sig, &signaled, &result);
 	if (signaled) {

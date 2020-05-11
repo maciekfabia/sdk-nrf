@@ -17,8 +17,8 @@
 #define ZBOSS_NVRAM_PAGE_SIZE (DT_FLASH_AREA_ZBOSS_NVRAM_SIZE \
 			       / ZBOSS_NVRAM_PAGE_COUNT)
 #define PHYSICAL_PAGE_SIZE 0x1000
-BUILD_ASSERT_MSG((ZBOSS_NVRAM_PAGE_SIZE % PHYSICAL_PAGE_SIZE) == 0,
-		 "The size must be a multiply of physical page size.");
+BUILD_ASSERT((ZBOSS_NVRAM_PAGE_SIZE % PHYSICAL_PAGE_SIZE) == 0,
+	     "The size must be a multiply of physical page size.");
 
 LOG_MODULE_DECLARE(zboss_osif, CONFIG_ZBOSS_OSIF_LOG_LEVEL);
 

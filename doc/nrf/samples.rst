@@ -39,6 +39,8 @@ In addition, the |NCS| provides the following samples that showcase the use of a
 
    ../../samples/nrf9160/*/README
 
+.. _zigbee_samples:
+
 .. toctree::
    :maxdepth: 1
    :caption: Zigbee samples

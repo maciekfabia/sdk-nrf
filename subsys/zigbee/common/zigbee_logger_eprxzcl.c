@@ -23,7 +23,7 @@ LOG_LEVEL_SET(CONFIG_ZIGBEE_CLI_LOG_LEVEL);
 #define LOG_SUBMODULE_NAME eprxzcl
 
 LOG_INSTANCE_REGISTER(LOG_MODULE_NAME, LOG_SUBMODULE_NAME,
-			CONFIG_ZIGBEE_CLI_LOG_LEVEL);
+		      CONFIG_ZIGBEE_CLI_LOG_LEVEL);
 
 /* This structure keeps reference to the logger instance used by this module. */
 struct log_ctx {
@@ -53,7 +53,7 @@ typedef struct {
  *          increment this value.
  * @ref zigbee_logger_eprxzcl_ep_handler puts this value in every log line
  */
-static uint32_t log_counter;
+static u32_t log_counter;
 
 /**@brief Circular buffer of logs
  *        produced by @ref zigbee_logger_eprxzcl_ep_handler
@@ -99,21 +99,21 @@ static char *prv_log_circ_buffer_get_next_buffer(void)
  *        to perform guarded log_message_curr advance
  * @note To be used within @ref zigbee_logger_eprxzcl_ep_handler only
  */
-#define PRV_ADVANCE_CURR_LOG_MESSAGE_PTR(s)                                                       \
-	do {                                                                                          \
-		if ((s) < 0) {                                                                            \
-			LOG_INST_ERR(                                                                         \
-				logger.inst,                                                                      \
-				"Received ZCL command but encoding error occurred during log producing");         \
-			return ZB_FALSE;                                                                      \
-		}                                                                                         \
-		log_message_curr += (s);                                                                \
-		if (log_message_curr >= log_message_end) {                                            \
-			LOG_INST_ERR(                                                                         \
-				logger.inst,                                                                      \
-				"Received ZCL command but produced log is too long");                             \
-			return ZB_FALSE;                                                                      \
-		}                                                                                         \
+#define PRV_ADVANCE_CURR_LOG_MESSAGE_PTR(s)								  \
+	do {												  \
+		if ((s) < 0) {										  \
+			LOG_INST_ERR(									  \
+				logger.inst,								  \
+				"Received ZCL command but encoding error occurred during log producing"); \
+			return ZB_FALSE;								  \
+		}											  \
+		log_message_curr += (s);								  \
+		if (log_message_curr >= log_message_end) {						  \
+			LOG_INST_ERR(									  \
+				logger.inst,								  \
+				"Received ZCL command but produced log is too long");			  \
+			return ZB_FALSE;								  \
+		}											  \
 	} while (0)
 
 zb_uint8_t zigbee_logger_eprxzcl_ep_handler(zb_bufid_t bufid)
@@ -129,7 +129,7 @@ zb_uint8_t zigbee_logger_eprxzcl_ep_handler(zb_bufid_t bufid)
 			ZB_BUF_GET_PARAM(bufid, zb_zcl_parsed_hdr_t);
 		size_t payload_length = zb_buf_len(bufid);
 		const zb_uint8_t *payload = zb_buf_begin(bufid);
-		uint32_t log_number = log_counter++;
+		u32_t log_number = log_counter++;
 
 		status = snprintf(log_message_curr,
 				  log_message_end - log_message_curr,
@@ -139,14 +139,14 @@ zb_uint8_t zigbee_logger_eprxzcl_ep_handler(zb_bufid_t bufid)
 		PRV_ADVANCE_CURR_LOG_MESSAGE_PTR(status);
 
 		switch (ZB_ZCL_PARSED_HDR_SHORT_DATA(cmd_info)
-				.source.addr_type) {
+			.source.addr_type) {
 		case ZB_ZCL_ADDR_TYPE_SHORT:
 			status = snprintf(
 				log_message_curr,
 				log_message_end - log_message_curr,
 				"0x%04x(short)",
 				ZB_ZCL_PARSED_HDR_SHORT_DATA(cmd_info)
-					.source.u.short_addr);
+				.source.u.short_addr);
 			PRV_ADVANCE_CURR_LOG_MESSAGE_PTR(status);
 			break;
 
@@ -155,7 +155,7 @@ zb_uint8_t zigbee_logger_eprxzcl_ep_handler(zb_bufid_t bufid)
 				log_message_curr,
 				log_message_end - log_message_curr,
 				ZB_ZCL_PARSED_HDR_SHORT_DATA(cmd_info)
-					.source.u.ieee_addr);
+				.source.u.ieee_addr);
 			PRV_ADVANCE_CURR_LOG_MESSAGE_PTR(status);
 
 			status =
@@ -171,7 +171,7 @@ zb_uint8_t zigbee_logger_eprxzcl_ep_handler(zb_bufid_t bufid)
 				log_message_end - log_message_curr,
 				"0x%x(src_id_gpd)",
 				ZB_ZCL_PARSED_HDR_SHORT_DATA(cmd_info)
-					.source.u.src_id);
+				.source.u.src_id);
 			PRV_ADVANCE_CURR_LOG_MESSAGE_PTR(status);
 			break;
 
@@ -180,7 +180,7 @@ zb_uint8_t zigbee_logger_eprxzcl_ep_handler(zb_bufid_t bufid)
 				log_message_curr,
 				log_message_end - log_message_curr,
 				ZB_ZCL_PARSED_HDR_SHORT_DATA(cmd_info)
-					.source.u.ieee_addr);
+				.source.u.ieee_addr);
 			PRV_ADVANCE_CURR_LOG_MESSAGE_PTR(status);
 			status =
 				snprintf(log_message_curr,
@@ -241,7 +241,9 @@ zb_uint8_t zigbee_logger_eprxzcl_ep_handler(zb_bufid_t bufid)
 				    payload, payload_length, false);
 		PRV_ADVANCE_CURR_LOG_MESSAGE_PTR(status);
 
-		/* Put again log_counter to be able to simple check log consistency */
+		/* Put again log_counter to be able to simple check
+		 * log consistency
+		 */
 		status = snprintf(log_message_curr,
 				  log_message_end - log_message_curr,
 				  "] (%" PRIu32 ")", log_number);

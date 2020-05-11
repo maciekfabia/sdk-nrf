@@ -20,4 +20,3 @@ target_sources(app PRIVATE
   src/main.c
   mock/log_mock.c
 )
-

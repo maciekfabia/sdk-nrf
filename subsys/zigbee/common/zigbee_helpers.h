@@ -12,14 +12,16 @@
 
 #include "zboss_api.h"
 
-/**@brief Function for setting the Erase persistent storage, depending on the erase pin.
- * If the erase pin (1.39 by default, defined in zigbee_helpers.c) is shortened to
- * the ground, then the persistent storage is erased. Otherwise, whether the storage
- * is erased is decided upon the input parameter 'erase'. This behaviour is only valid
- * if PCA10056 is used.
- * 
- * @param [IN] erase Whether to erase the persistent storage in case the erase pin is 
- *                   not shortened to the ground.
+/**@brief Function for setting the Erase persistent storage,
+ *        depending on the erase pin.
+ *
+ * If the erase pin (1.39 by default, defined in zigbee_helpers.c)
+ * is shortened to the ground, then the persistent storage is erased.
+ * Otherwise, whether the storage is erased is decided upon the input
+ * parameter 'erase'. This behaviour is only valid if PCA10056 is used.
+ *
+ * @param [IN] erase Whether to erase the persistent storage in case
+ *                   the erase pin is not shortened to the ground.
  */
 zb_void_t zigbee_erase_persistent_storage(zb_bool_t erase);
 
@@ -32,31 +34,32 @@ zb_void_t zigbee_erase_persistent_storage(zb_bool_t erase);
  * @param[in]  reverse   If true, data output happens in the reverse order.
  *
  * @return     snprintf-compatible value. Less than zero means encoding error.
- *             Non-negative value is the number of characters that would have been written
- *             if the supplied buffer had been large enough. Value greater than or equal to
- *             buf_len means that the supplied buffer was too small.
+ *             Non-negative value is the number of characters that
+ *             would have been written if the supplied buffer had been
+ *             large enough. Value greater than or equal to buf_len means
+ *             that the supplied buffer was too small.
  *
- * @note    Null terminator is written if buf_len is large enough, but does not
- *          count for the return value.
+ * @note    Null terminator is written if buf_len is large enough,
+ *          but does not count for the return value.
  */
-int to_hex_str(char *out, uint16_t out_size, const uint8_t *in,
-	       uint8_t in_size, bool reverse);
+int to_hex_str(char *out, u16_t out_size, const u8_t *in,
+	       u8_t in_size, bool reverse);
 
-/**@brief Read array of uint8_t from hex string.
+/**@brief Read array of u8_t from hex string.
  *
  * @param in_str        Pointer to the input hex string.
  * @param in_str_len    Length, in characters, of the input string.
- * @param out_buff      Pointer to the output uint8_t array.
- * @param out_buff_size Size, in bytes, of the output uint8_t array.
+ * @param out_buff      Pointer to the output u8_t array.
+ * @param out_buff_size Size, in bytes, of the output u8_t array.
  * @param reverse       If true then parse from end to start.
  *
  * @retval true   if the conversion succeed
  * @retval false  if the conversion failed
  */
-bool parse_hex_str(char const *in_str, uint8_t in_str_len,
-		   uint8_t *out_buff, uint8_t out_buff_size, bool reverse);
+bool parse_hex_str(char const *in_str, u8_t in_str_len,
+		   u8_t *out_buff, u8_t out_buff_size, bool reverse);
 
-/**@brief Parse a hex string to uint8_t.
+/**@brief Parse a hex string to u8_t.
  *
  * The function verifies if input is valid, i.e., if all input characters
  * are valid hex digits. If an invalid character is found then function fails.
@@ -67,12 +70,12 @@ bool parse_hex_str(char const *in_str, uint8_t in_str_len,
  * @retval true   if the conversion succeed
  * @retval false  if the conversion failed
  */
-static inline bool parse_hex_u8(char const *s, uint8_t *value)
+static inline bool parse_hex_u8(char const *s, u8_t *value)
 {
 	return parse_hex_str(s, strlen(s), value, sizeof(*value), true);
 }
 
-/**@brief Parse a hex string to uint16_t.
+/**@brief Parse a hex string to u16_t.
  *
  * The function verifies if input is valid, i.e., if all input characters
  * are valid hex digits. If an invalid character is found then function fails.
@@ -83,9 +86,9 @@ static inline bool parse_hex_u8(char const *s, uint8_t *value)
  * @retval true   if the conversion succeed
  * @retval false  if the conversion failed
  */
-static inline bool parse_hex_u16(char const *s, uint16_t *value)
+static inline bool parse_hex_u16(char const *s, u16_t *value)
 {
-    return parse_hex_str(s, strlen(s), (uint8_t *)value, sizeof(*value), true);
+	return parse_hex_str(s, strlen(s), (u8_t *)value, sizeof(*value), true);
 }
 
 /**@brief Function for converting 64-bit address to hex string.
@@ -95,26 +98,27 @@ static inline bool parse_hex_u16(char const *s, uint16_t *value)
  * @param[in]  in           Zigbee IEEE address to be converted to string.
  *
  * @return     snprintf-compatible value. Less than zero means encoding error.
- *             Non-negative value is the number of characters that would have been written
- *             if the supplied buffer had been large enough. Value greater than or equal to
- *             buf_len means that the supplied buffer was too small.
+ *             Non-negative value is the number of characters that would
+ *             have been written if the supplied buffer had been large enough.
+ *             Value greater than or equal to buf_len means that the supplied
+ *             buffer was too small.
  *
- * @note    Null terminator is written if buf_len is large enough, but does not
- *          count for the return value.
+ * @note    Null terminator is written if buf_len is large enough,
+ *          but does not count for the return value.
  */
-int ieee_addr_to_str(char *str_buf, uint16_t buf_len,
+int ieee_addr_to_str(char *str_buf, u16_t buf_len,
 		     const zb_ieee_addr_t in);
 
 /**@brief Address type.
  *
- * @ref ADDR_SHORT and @ref ADDR_LONG correspond to APS addressing mode constants
- * and must not be changed.
+ * @ref ADDR_SHORT and @ref ADDR_LONG correspond to APS addressing
+ * mode constants and must not be changed.
  */
 typedef enum {
-	ADDR_INVALID = 0,
-	ADDR_ANY = 1,
-	ADDR_SHORT = 2, /* ZB_APS_ADDR_MODE_16_ENDP_PRESENT */
-	ADDR_LONG = 3, /* ZB_APS_ADDR_MODE_64_ENDP_PRESENT */
+	ADDR_INVALID    = 0,
+	ADDR_ANY        = 1,
+	ADDR_SHORT      = 2,    /* ZB_APS_ADDR_MODE_16_ENDP_PRESENT */
+	ADDR_LONG       = 3,    /* ZB_APS_ADDR_MODE_64_ENDP_PRESENT */
 } addr_type_t;
 
 /**@brief Function for parsing a null-terminated string of hex characters
@@ -122,7 +126,8 @@ typedef enum {
  *
  * The function will skip 0x suffix from input if present.
  *
- * @param input     Pointer to the input string string representing the address in big endian.
+ * @param input     Pointer to the input string string representing
+ *                  the address in big endian.
  * @param output    Pointer to the resulting zb_addr_u variable.
  * @param addr_type Expected address type.
  *
@@ -136,7 +141,8 @@ addr_type_t parse_address(const char *input, zb_addr_u *output,
  *
  * The function will skip 0x suffix from input if present.
  *
- * @param input   Pointer to the input string representing the address in big endian.
+ * @param input   Pointer to the input string representing the address
+ *                in big endian.
  * @param output  Variable where the address will be placed.
  *
  * @retval true   if the conversion succeed
@@ -144,7 +150,8 @@ addr_type_t parse_address(const char *input, zb_addr_u *output,
  */
 static inline bool parse_long_address(const char *input, zb_ieee_addr_t addr)
 {
-    return (parse_address(input, (zb_addr_u *)addr, ADDR_LONG) != ADDR_INVALID);
+	return (parse_address(input, (zb_addr_u *)addr,
+			      ADDR_LONG) != ADDR_INVALID);
 }
 
 /**@brief Function for parsing a null-terminated string of hex characters
@@ -152,7 +159,8 @@ static inline bool parse_long_address(const char *input, zb_ieee_addr_t addr)
  *
  * The function will skip 0x suffix from input if present.
  *
- * @param input   Pointer to the input string representing the address in big endian.
+ * @param input   Pointer to the input string representing
+ *                the address in big endian.
  * @param output  Pointer to the a variable where address will be placed.
  *
  * @retval true   if the conversion succeed
@@ -160,10 +168,12 @@ static inline bool parse_long_address(const char *input, zb_ieee_addr_t addr)
  */
 static inline bool parse_short_address(const char *input, zb_uint16_t *addr)
 {
-    return (parse_address(input, (zb_addr_u *)addr, ADDR_SHORT) != ADDR_INVALID);
+	return (parse_address(input, (zb_addr_u *)addr,
+			      ADDR_SHORT) != ADDR_INVALID);
 }
 
-/**@brief Function for passing signals to the default Zigbee stack event handler.
+/**@brief Function for passing signals to the default
+ *        Zigbee stack event handler.
  *
  * @note This function does not free the Zigbee buffer.
  *
@@ -173,19 +183,26 @@ static inline bool parse_short_address(const char *input, zb_uint16_t *addr)
  */
 zb_ret_t zigbee_default_signal_handler(zb_bufid_t bufid);
 
-/**@brief Function for indicating the Zigbee network connection status on LED.
- *        If the device is successfully commissioned, the LED is turned on.
- *        If the device is not commissioned or has left the network, the LED is turned off.
+/**@brief Function for indicating the Zigbee network connection
+ *        status on LED.
+ *
+ * If the device is successfully commissioned, the LED is turned on.
+ * If the device is not commissioned or has left the network,
+ * the LED is turned off.
  *
  * @note This function does not free the Zigbee buffer.
  *
- * @param[in] bufid   Reference to the Zigbee stack buffer used to pass signal.
- * @param[in] led_idx LED index, as defined in the board-specific BSP header. The index starts from 0.
+ * @param[in] bufid   Reference to the Zigbee stack buffer
+ *                    used to pass signal.
+ * @param[in] led_idx LED index, as defined in the board-specific
+ *                    BSP header. The index starts from 0.
  */
-void zigbee_led_status_update(zb_bufid_t bufid, uint32_t led_idx);
+void zigbee_led_status_update(zb_bufid_t bufid, u32_t led_idx);
 
-/**@brief Function for indicating the default signal handler about user input on the device.
- *        If the device is not commissioned, the rejoin procedure is started.
+/**@brief Function for indicating the default signal handler
+ *        about user input on the device.
+ *
+ * If the device is not commissioned, the rejoin procedure is started.
  *
  * @note This function is to be used with End Devices only.
  *

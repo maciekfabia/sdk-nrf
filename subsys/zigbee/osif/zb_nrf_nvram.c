@@ -14,14 +14,17 @@
 /* ZBOSS uses two virtual pages in the same size. */
 #define ZBOSS_NVRAM_PAGE_COUNT 2
 /* Size of logical ZBOSS NVRAM page in bytes. */
-#define ZBOSS_NVRAM_PAGE_SIZE (DT_FLASH_AREA_ZBOSS_NVRAM_SIZE / ZBOSS_NVRAM_PAGE_COUNT)
+#define ZBOSS_NVRAM_PAGE_SIZE (DT_FLASH_AREA_ZBOSS_NVRAM_SIZE \
+			       / ZBOSS_NVRAM_PAGE_COUNT)
 #define PHYSICAL_PAGE_SIZE 0x1000
-BUILD_ASSERT_MSG((ZBOSS_NVRAM_PAGE_SIZE % PHYSICAL_PAGE_SIZE) == 0, 
-			"The size must be a multiply of physical page size.");
+BUILD_ASSERT_MSG((ZBOSS_NVRAM_PAGE_SIZE % PHYSICAL_PAGE_SIZE) == 0,
+		 "The size must be a multiply of physical page size.");
 
 LOG_MODULE_DECLARE(zboss_osif, CONFIG_ZBOSS_OSIF_LOG_LEVEL);
 
-/* ZBOSS callout that should be called once flash erase page operation is finished. */
+/* ZBOSS callout that should be called once flash erase page operation
+ * is finished.
+ */
 zb_void_t zb_nvram_erase_finished(zb_uint8_t page);
 
 static const struct flash_area *fa; /* ZBOSS nvram */
@@ -48,12 +51,12 @@ void zb_osif_nvram_init(const zb_char_t *name)
 #endif
 }
 
-zb_uint32_t zb_get_nvram_page_length()
+zb_uint32_t zb_get_nvram_page_length(void)
 {
 	return ZBOSS_NVRAM_PAGE_SIZE;
 }
 
-zb_uint8_t zb_get_nvram_page_count()
+zb_uint8_t zb_get_nvram_page_count(void)
 {
 	return ZBOSS_NVRAM_PAGE_COUNT;
 }
@@ -81,11 +84,13 @@ zb_ret_t zb_osif_nvram_read(zb_uint8_t page, zb_uint32_t pos, zb_uint8_t *buf,
 	if (!len) {
 		return RET_INVALID_PARAMETER_4;
 	}
-	LOG_DBG("Function: %s, page: %d, pos: %d, len: %d", __func__, page, pos, len);
+	LOG_DBG("Function: %s, page: %d, pos: %d, len: %d",
+		__func__, page, pos, len);
 
 	u32_t flash_addr = get_page_base_offset(page) + pos;
 
 	int err = flash_area_read(fa, flash_addr, buf, len);
+
 	if (err) {
 		LOG_ERR("Read error: %d", err);
 		return RET_ERROR;
@@ -110,13 +115,15 @@ zb_ret_t zb_osif_nvram_write(zb_uint8_t page, zb_uint32_t pos, void *buf,
 		return RET_INVALID_PARAMETER_3;
 	}
 
-	if (!(len>>2)) {
+	if (!(len >> 2)) {
 		return RET_INVALID_PARAMETER_4;
 	}
 
-	LOG_DBG("Function: %s, page: %d, pos: %d, len: %d", __func__, page, pos, len);
+	LOG_DBG("Function: %s, page: %d, pos: %d, len: %d",
+		__func__, page, pos, len);
 
 	int err = flash_area_write(fa, flash_addr, buf, len);
+
 	if (err) {
 		LOG_ERR("Write error: %d", err);
 		return RET_ERROR;
@@ -131,7 +138,7 @@ zb_ret_t zb_osif_nvram_erase_async(zb_uint8_t page)
 
 	if (page < zb_get_nvram_page_count()) {
 		int err = flash_area_erase(fa, get_page_base_offset(page),
-								   zb_get_nvram_page_length());
+					   zb_get_nvram_page_length());
 		if (err) {
 			LOG_ERR("Erase error: %d", err);
 			ret = RET_ERROR;
@@ -141,12 +148,12 @@ zb_ret_t zb_osif_nvram_erase_async(zb_uint8_t page)
 	return ret;
 }
 
-void zb_osif_nvram_wait_for_last_op()
+void zb_osif_nvram_wait_for_last_op(void)
 {
 	/* empty for synchronous erase and write */
 }
 
-void zb_osif_nvram_flush()
+void zb_osif_nvram_flush(void)
 {
 	/* empty for synchronous erase and write */
 }
@@ -154,16 +161,18 @@ void zb_osif_nvram_flush()
 
 #ifdef ZB_PRODUCTION_CONFIG
 
-#define ZB_OSIF_PRODUCTION_CONFIG_MAGIC             {0xE7, 0x37, 0xDD, 0xF6}
-#define ZB_OSIF_PRODUCTION_CONFIG_MAGIC_SIZE		4
+#define ZB_OSIF_PRODUCTION_CONFIG_MAGIC             { 0xE7, 0x37, 0xDD, 0xF6 }
+#define ZB_OSIF_PRODUCTION_CONFIG_MAGIC_SIZE        4
 
 zb_bool_t zb_osif_production_configuration_check_presence(void)
 {
-	zb_uint8_t hdr[ZB_OSIF_PRODUCTION_CONFIG_MAGIC_SIZE] = ZB_OSIF_PRODUCTION_CONFIG_MAGIC;
+	zb_uint8_t hdr[ZB_OSIF_PRODUCTION_CONFIG_MAGIC_SIZE] =
+		ZB_OSIF_PRODUCTION_CONFIG_MAGIC;
 	zb_uint8_t buffer[ZB_OSIF_PRODUCTION_CONFIG_MAGIC_SIZE];
 
 	int err = flash_area_read(fa_pc, 0, buffer,
-							  ZB_OSIF_PRODUCTION_CONFIG_MAGIC_SIZE);
+				  ZB_OSIF_PRODUCTION_CONFIG_MAGIC_SIZE);
+
 	if (!err) {
 		return ((zb_bool_t) !memcmp(buffer, hdr, sizeof(buffer)));
 
@@ -176,7 +185,8 @@ zb_ret_t zb_osif_production_configuration_read_header(zb_uint8_t *prod_cfg_hdr,
 						      zb_uint16_t hdr_len)
 {
 	int err = flash_area_read(fa_pc, ZB_OSIF_PRODUCTION_CONFIG_MAGIC_SIZE,
-							  prod_cfg_hdr, hdr_len);
+				  prod_cfg_hdr, hdr_len);
+
 	if (err) {
 		LOG_ERR("Prod conf header read error: %d", err);
 		return RET_ERROR;
@@ -185,10 +195,13 @@ zb_ret_t zb_osif_production_configuration_read_header(zb_uint8_t *prod_cfg_hdr,
 }
 
 
-zb_ret_t zb_osif_production_configuration_read(zb_uint8_t *buffer, zb_uint16_t len, zb_uint16_t offset)
+zb_ret_t zb_osif_production_configuration_read(zb_uint8_t *buffer,
+					       zb_uint16_t len,
+					       zb_uint16_t offset)
 {
 	u32_t pc_offset = ZB_OSIF_PRODUCTION_CONFIG_MAGIC_SIZE + offset;
 	int err = flash_area_read(fa_pc, pc_offset, buffer, len);
+
 	if (err) {
 		LOG_ERR("Prod conf read error: %d", err);
 		return RET_ERROR;
@@ -196,6 +209,6 @@ zb_ret_t zb_osif_production_configuration_read(zb_uint8_t *buffer, zb_uint16_t l
 	return RET_OK;
 }
 
-#endif /* ZB_PRODUCTION_CONFIG */
+#endif  /* ZB_PRODUCTION_CONFIG */
 
-#endif /* ZB_USE_NVRAM */
+#endif  /* ZB_USE_NVRAM */

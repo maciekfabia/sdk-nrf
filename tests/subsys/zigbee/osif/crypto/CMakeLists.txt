@@ -22,4 +22,3 @@ target_sources(app PRIVATE
   ${ZEPHYR_BASE}/../nrf/subsys/zigbee/osif/zb_nrf_crypto.c
   ${ZEPHYR_BASE}/../nrf/subsys/zigbee/osif/nrf_ecb_driver.c
 )
-

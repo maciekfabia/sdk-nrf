@@ -96,7 +96,7 @@ void thread_0(void)
 {
 	zigbee_schedule_callback(add_to_queue_from_callback, 0);
 	while (1) {
-		k_sleep(10);
+		k_sleep(K_MSEC(10));
 	}
 }
 
@@ -104,7 +104,7 @@ void thread_1(void)
 {
 	zigbee_schedule_callback(add_to_queue_from_callback, 1);
 	while (1) {
-		k_sleep(10);
+		k_sleep(K_MSEC(10));
 	}
 }
 
@@ -112,7 +112,7 @@ void thread_2(void)
 {
 	zigbee_schedule_callback(add_to_queue_from_callback, 2);
 	while (1) {
-		k_sleep(10);
+		k_sleep(K_MSEC(10));
 	}
 }
 
@@ -120,21 +120,21 @@ void thread_3(void)
 {
 	zigbee_schedule_callback(add_to_queue_from_callback, 3);
 	while (1) {
-		k_sleep(10);
+		k_sleep(K_MSEC(10));
 	}
 }
 
 K_THREAD_DEFINE(THREAD_0, STACKSIZE, thread_0, NULL, NULL, NULL,
-		PRIORITY, 0, K_FOREVER);
+		PRIORITY, 0, -1);
 
 K_THREAD_DEFINE(THREAD_1, STACKSIZE, thread_1, NULL, NULL, NULL,
-		PRIORITY, 0, K_FOREVER);
+		PRIORITY, 0, -1);
 
 K_THREAD_DEFINE(THREAD_2, STACKSIZE, thread_2, NULL, NULL, NULL,
-		PRIORITY, 0, K_FOREVER);
+		PRIORITY, 0, -1);
 
 K_THREAD_DEFINE(THREAD_3, STACKSIZE, thread_3, NULL, NULL, NULL,
-		PRIORITY, 0, K_FOREVER);
+		PRIORITY, 0, -1);
 
 void test_zboss_app_callbacks(void)
 {
@@ -147,7 +147,7 @@ void test_zboss_app_callbacks(void)
 		expected_queue_usage_cnt++;
 
 		/* Let callback threads to execute. */
-		k_sleep(10);
+		k_sleep(K_MSEC(10));
 
 		zassert_equal(
 			expected_queue_usage_cnt,

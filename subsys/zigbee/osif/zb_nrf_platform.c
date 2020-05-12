@@ -167,7 +167,7 @@ static void zb_app_cb_process_schedule(struct k_work *item)
 	 * Note: the ZB_SCHEDULE_APP_CALLBACK is thread-safe.
 	 */
 	while (ZB_SCHEDULE_APP_CALLBACK(zb_app_cb_process, 0) != RET_OK) {
-		k_sleep(1000);
+		k_sleep(K_MSEC(1000));
 	}
 	zigbee_event_notify(ZIGBEE_EVENT_APP);
 

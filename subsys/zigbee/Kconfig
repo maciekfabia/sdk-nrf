@@ -82,6 +82,15 @@ config ZBOSS_DEFAULT_THREAD_STACK_SIZE
 	help
 	  Stack size of ZBOSS Zephyr task. This is the task zboss_main_loop_iteration is called from.
 
+config ZIGBEE_APP_CB_QUEUE_LENGTH
+	int "Length of the application callback and alarm queue"
+	default 10
+	help
+	  This queue is used to pass application callbacks and alarms from other
+	  threads/ISR to the ZBOSS main loop context.
+	  Elements from this queue are flushed right after ZBOSS context awakes,
+	  before the actual callback execution.
+
 config ZIGBEE_VENDOR_OUI
 	hex "A value that represents MAC Address Block Large"
 	default 0xf4ce36

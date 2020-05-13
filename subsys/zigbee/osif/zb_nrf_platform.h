@@ -61,7 +61,8 @@ zb_ret_t zigbee_schedule_callback(zb_callback_t func, zb_uint8_t param);
  *  - Wakes up the Zigbee task.
  *
  * @param func        function to execute
- * @param param       zb_uint8_t callback parameter - usually, ref to packet buffer
+ * @param param       zb_uint8_t callback parameter - usually,
+ *                    ref to packet buffer
  * @param user_param  zb_uint16_t additional user parameter
  *
  * @return RET_OK or RET_OVERFLOW.

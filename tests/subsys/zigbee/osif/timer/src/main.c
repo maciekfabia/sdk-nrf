@@ -41,10 +41,10 @@ static void test_zb_osif_timer(void)
 
 	ZB_START_HW_TIMER();
 	u32_t alarm_count = GetAlarmCount();
-	
+
 	k_usleep(ZB_BEACON_INTERVAL_USEC);
 	u32_t new_alarm_count = GetAlarmCount();
-	
+
 	zassert_true((alarm_count != new_alarm_count),
 		     "Alarm handler has not occurred");
 }

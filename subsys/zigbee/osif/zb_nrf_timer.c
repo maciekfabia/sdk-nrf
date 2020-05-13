@@ -24,8 +24,10 @@ typedef struct {
 	volatile atomic_t is_running;
 } zb_timer_t;
 
-static zb_timer_t zb_timer =
-	{ .is_init = ZB_FALSE, .is_running = ATOMIC_INIT(0) };
+static zb_timer_t zb_timer = {
+	.is_init = ZB_FALSE,
+	.is_running = ATOMIC_INIT(0)
+};
 
 /* Forward declaration, dependency to ZBOSS */
 zb_void_t zb_osif_zboss_timer_tick(void);

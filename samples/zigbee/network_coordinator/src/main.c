@@ -162,6 +162,7 @@ void zboss_signal_handler(zb_bufid_t bufid)
 		zb_zdo_signal_device_annce_params_t *dev_annce_params =
 			ZB_ZDO_SIGNAL_GET_PARAMS(
 				sg_p, zb_zdo_signal_device_annce_params_t);
+
 		LOG_INF("New device commissioned or rejoined (short: 0x%04hx)",
 			dev_annce_params->device_short_addr);
 

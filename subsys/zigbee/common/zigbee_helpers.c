@@ -70,8 +70,8 @@ zb_void_t zigbee_erase_persistent_storage(zb_bool_t erase)
 #endif
 }
 
-int to_hex_str(char *out, uint16_t out_size, const uint8_t *in,
-	       uint8_t in_size, bool reverse)
+int to_hex_str(char *out, u16_t out_size, const u8_t *in,
+	       u8_t in_size, bool reverse)
 {
 	int bytes_written = 0;
 	int status;
@@ -79,7 +79,9 @@ int to_hex_str(char *out, uint16_t out_size, const uint8_t *in,
 
 	for (; in_size > 0; in_size--) {
 		status = snprintf(out + bytes_written,
-				  out_size - bytes_written, "%02x", in[i]);
+				  out_size - bytes_written,
+				  "%02x",
+				  in[i]);
 		if (status < 0) {
 			return status;
 		}
@@ -335,8 +337,7 @@ zb_ret_t zigbee_default_signal_handler(zb_bufid_t bufid)
 				strcpy(ieee_addr_buf, "unknown");
 			}
 
-			LOG_INF(
-				"Joined network successfully (Extended PAN ID: %s, PAN ID: 0x%04hx)",
+			LOG_INF("Joined network successfully (Extended PAN ID: %s, PAN ID: 0x%04hx)",
 				ieee_addr_buf,
 				ZB_PIBCACHE_PAN_ID());
 			/* Device has joined the network so stop the network
@@ -559,7 +560,9 @@ zb_ret_t zigbee_default_signal_handler(zb_bufid_t bufid)
 		if (addr_len < 0) {
 			strcpy(ieee_addr_buf, "unknown");
 		}
-		LOG_INF("Device authorization event received (short: 0x%04hx, long: %s, authorization type: %d, authorization status: %d)",
+		LOG_INF("Device authorization event received"
+			" (short: 0x%04hx, long: %s, authorization type: %d,"
+			" authorization status: %d)",
 			authorize_params->short_addr, ieee_addr_buf,
 			authorize_params->authorization_type,
 			authorize_params->authorization_status);

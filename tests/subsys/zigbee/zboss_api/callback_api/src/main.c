@@ -86,7 +86,7 @@ void add_to_queue_from_callback(u8_t int_to_put)
 	int ret_val;
 
 	ret_val = k_msgq_put(&zb_callback_queue,
-			     (void*)&ref_int[int_to_put],
+			     (void *)&ref_int[int_to_put],
 			     K_NO_WAIT);
 	__ASSERT(ret_val == 0, "Can not put data into the queue");
 }

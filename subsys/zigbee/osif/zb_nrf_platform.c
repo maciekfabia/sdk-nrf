@@ -251,7 +251,9 @@ zb_ret_t zigbee_schedule_callback(zb_callback_t func, zb_uint8_t param)
 	return RET_OK;
 }
 
-zb_ret_t zigbee_schedule_callback2(zb_callback_t func, zb_uint8_t param, zb_uint16_t user_param)
+zb_ret_t zigbee_schedule_callback2(zb_callback_t func,
+				   zb_uint8_t param,
+				   zb_uint16_t user_param)
 {
 	zb_app_cb_t new_app_cb = {
 		.type = ZB_CALLBACK_TYPE_TWO_PARAMS,
@@ -268,7 +270,9 @@ zb_ret_t zigbee_schedule_callback2(zb_callback_t func, zb_uint8_t param, zb_uint
 	return RET_OK;
 }
 
-zb_ret_t zigbee_schedule_alarm(zb_callback_t func, zb_uint8_t param, zb_time_t run_after)
+zb_ret_t zigbee_schedule_alarm(zb_callback_t func,
+			       zb_uint8_t param,
+			       zb_time_t run_after)
 {
 	zb_app_cb_t new_app_cb = {
 		.type = ZB_CALLBACK_TYPE_ALARM_SET,

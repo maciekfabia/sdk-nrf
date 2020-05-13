@@ -17,9 +17,9 @@
  *          (directly or indirectly) it produces a log line similar
  *          to the following:
  * @code
- * Received ZCL command (17): src_addr=0x0000(short) src_ep=64 dst_ep=64 cluster_id=0x0000
- * profile_id=0x0104 rssi=0 cmd_dir=0 common_cmd=1 cmd_id=0x00 cmd_seq=128
- * disable_def_resp=0 manuf_code=void payload=[0700] (17)
+ * Received ZCL command (17): src_addr=0x0000(short) src_ep=64 dst_ep=64
+ * cluster_id=0x0000 profile_id=0x0104 rssi=0 cmd_dir=0 common_cmd=1 cmd_id=0x00
+ * cmd_seq=128 disable_def_resp=0 manuf_code=void payload=[0700] (17)
  * @endcode
  *
  * @param  bufid     Reference to zigbee buffer holding received

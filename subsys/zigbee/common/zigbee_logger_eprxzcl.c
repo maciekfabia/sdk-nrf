@@ -99,21 +99,21 @@ static char *prv_log_circ_buffer_get_next_buffer(void)
  *        to perform guarded log_message_curr advance
  * @note To be used within @ref zigbee_logger_eprxzcl_ep_handler only
  */
-#define PRV_ADVANCE_CURR_LOG_MESSAGE_PTR(s)								  \
-	do {												  \
-		if ((s) < 0) {										  \
-			LOG_INST_ERR(									  \
-				logger.inst,								  \
+#define PRV_ADVANCE_CURR_LOG_MESSAGE_PTR(s)			\
+	do {							\
+		if ((s) < 0) {					\
+			LOG_INST_ERR(				\
+				logger.inst,			\
 				"Received ZCL command but encoding error occurred during log producing"); \
-			return ZB_FALSE;								  \
-		}											  \
-		log_message_curr += (s);								  \
-		if (log_message_curr >= log_message_end) {						  \
-			LOG_INST_ERR(									  \
-				logger.inst,								  \
-				"Received ZCL command but produced log is too long");			  \
-			return ZB_FALSE;								  \
-		}											  \
+			return ZB_FALSE;			\
+		}						\
+		log_message_curr += (s);			\
+		if (log_message_curr >= log_message_end) {	\
+			LOG_INST_ERR(				\
+				logger.inst,			\
+				"Received ZCL command but produced log is too long"); \
+			return ZB_FALSE;			\
+		}						\
 	} while (0)
 
 zb_uint8_t zigbee_logger_eprxzcl_ep_handler(zb_bufid_t bufid)

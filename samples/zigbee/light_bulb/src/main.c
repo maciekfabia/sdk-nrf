@@ -104,8 +104,7 @@ LOG_MODULE_REGISTER(app);
 /* Main application customizable context.
  * Stores all settings and static values.
  */
-typedef struct
-{
+typedef struct {
 	zb_zcl_basic_attrs_ext_t         basic_attr;
 	zb_zcl_identify_attrs_t          identify_attr;
 	zb_zcl_scenes_attrs_t            scenes_attr;
@@ -276,6 +275,7 @@ static void level_control_set_value(zb_uint16_t new_level)
 	 */
 	if (new_level == 0) {
 		zb_uint8_t value = ZB_FALSE;
+
 		ZB_ZCL_SET_ATTRIBUTE(
 			HA_DIMMABLE_LIGHT_ENDPOINT,
 			ZB_ZCL_CLUSTER_ID_ON_OFF,
@@ -285,6 +285,7 @@ static void level_control_set_value(zb_uint16_t new_level)
 			ZB_FALSE);
 	} else {
 		zb_uint8_t value = ZB_TRUE;
+
 		ZB_ZCL_SET_ATTRIBUTE(
 			HA_DIMMABLE_LIGHT_ENDPOINT,
 			ZB_ZCL_CLUSTER_ID_ON_OFF,
@@ -397,12 +398,11 @@ static void bulb_clusters_attr_init(void)
  */
 static zb_void_t zcl_device_cb(zb_bufid_t bufid)
 {
-	zb_uint8_t                       cluster_id;
-	zb_uint8_t                       attr_id;
+	zb_uint8_t cluster_id;
+	zb_uint8_t attr_id;
 	zb_zcl_device_callback_param_t  *device_cb_param =
-		ZB_BUF_GET_PARAM(
-			bufid,
-			zb_zcl_device_callback_param_t);
+		ZB_BUF_GET_PARAM(bufid,
+				 zb_zcl_device_callback_param_t);
 
 	LOG_INF("%s id %hd", __func__, device_cb_param->device_cb_id);
 
@@ -428,7 +428,7 @@ static zb_void_t zcl_device_cb(zb_bufid_t bufid)
 		if (cluster_id == ZB_ZCL_CLUSTER_ID_ON_OFF) {
 			u8_t value =
 				device_cb_param->cb_param.set_attr_value_param
-					.values.data8;
+				.values.data8;
 
 			LOG_INF("on/off attribute setting to %hd", value);
 			if (attr_id == ZB_ZCL_ATTR_ON_OFF_ON_OFF_ID) {
@@ -436,7 +436,7 @@ static zb_void_t zcl_device_cb(zb_bufid_t bufid)
 			}
 		} else if (cluster_id == ZB_ZCL_CLUSTER_ID_LEVEL_CONTROL) {
 			u16_t value = device_cb_param->cb_param.
-					set_attr_value_param.values.data16;
+				      set_attr_value_param.values.data16;
 
 			LOG_INF("level control attribute setting to %hd",
 				value);
@@ -456,7 +456,7 @@ static zb_void_t zcl_device_cb(zb_bufid_t bufid)
 		break;
 	}
 
-	LOG_INF("zcl_device_cb status: %hd", device_cb_param->status);
+	LOG_INF("%s status: %hd", __func__, device_cb_param->status);
 }
 
 /**@brief Zigbee stack event handler.

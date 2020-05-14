@@ -93,22 +93,21 @@ Custom logging per module
 -------------------------
 
 Logging is handled with Zephyr's ``CONFIG_LOG`` option.
-This option enables logging for both the stack and Zephyr's :ref:`zephyr:logger` API.
+This option enables logging for both the stack and Zephyr's :ref:`zephyr:logging_api` API.
 
 Stack logs
 ~~~~~~~~~~
 
-The stack logs are indepentent from Zephyr's :ref:`zephyr:logger` API.
+The stack logs are indepentent from Zephyr's :ref:`zephyr:logging_api` API.
 To customize them, use the following options:
 
 * :option:`CONFIG_ZBOSS_ERROR_PRINT_TO_LOG` - Allows ZBOSS to log its errors; enabled by default.
 * :option:`CONFIG_ZBOSS_TRACE_MASK` - Sets the modules from which ZBOSS will log the debug messages with :option:`CONFIG_ZBOSS_TRACE_LOG_LEVEL`; no module is set by default.
-* :option:`CONFIG_ZB_ASYNC_TRACE_CONTROL` - Allows ZBOSS to initialize and flush logger.
 
 Zephyr's logger options
 ~~~~~~~~~~~~~~~~~~~~~~~
 
-Zephyr's :ref:`zephyr:logger` starts with the default ``ERR`` logging level (only errors reported).
+Zephyr's :ref:`zephyr:logging_api` starts with the default ``ERR`` logging level (only errors reported).
 This level is used by default by the application.
 
 You can configure custom logger options for each Zigbee and ZBOSS module.

@@ -96,5 +96,5 @@ In addition, it uses the following Zephyr libraries:
 
 * ``include/zephyr.h``
 * ``include/device.h``
-* :ref:`zephyr:settings`
-* :ref:`zephyr:logger`
+* :ref:`zephyr:settings_api`
+* :ref:`zephyr:logging_api`

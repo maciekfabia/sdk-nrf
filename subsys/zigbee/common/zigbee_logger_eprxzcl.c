@@ -65,9 +65,8 @@ static prv_log_circ_buffer_t log_circ_buffer;
 
 /**@brief Function returning next log buffer to be filled in.
  *
- * Due to problems with reliable logging of strings using @ref NRF_LOG_PUSH
- * in current version of nRF5 SDK, this function returns a buffer, which
- * may be filled up with log message and passed to LOG_INF
+ * This function returns a buffer, which may be filled up with log message
+ * and passed to LOG_INF.
  * User must be aware that actually no 'free' operation happens anywhere.
  * Buffer may get overwritten if the backend processes logs slower than
  * they are produced. Keep PRV_LOG_CIRC_BUFFER_MAX_LOGS big enough.
@@ -118,7 +117,7 @@ static char *prv_log_circ_buffer_get_next_buffer(void)
 
 zb_uint8_t zigbee_logger_eprxzcl_ep_handler(zb_bufid_t bufid)
 {
-	if (CONFIG_LOG && (CONFIG_ZIGBEE_CLI_LOG_LEVEL >= LOG_LEVEL_INF)) {
+	if (CONFIG_ZIGBEE_CLI_LOG_LEVEL >= LOG_LEVEL_INF) {
 		int status;
 		char *log_message = prv_log_circ_buffer_get_next_buffer();
 		char *log_message_curr = log_message;

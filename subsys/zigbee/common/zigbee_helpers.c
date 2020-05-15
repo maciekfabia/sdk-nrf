@@ -7,6 +7,7 @@
 #include <stdio.h>
 #include <ctype.h>
 #include <stddef.h>
+#include <sys/util.h>
 
 #include <dk_buttons_and_leds.h>
 #include <logging/log.h>
@@ -45,20 +46,20 @@
 LOG_MODULE_REGISTER(zigbee_helpers, CONFIG_ZIGBEE_HELPERS_LOG_LEVEL);
 
 /* Rejoin-procedure related variables. */
-static zb_uint8_t           stack_initialised             = ZB_FALSE;
-static zb_uint8_t           is_rejoin_procedure_started   = ZB_FALSE;
-static zb_uint8_t           is_rejoin_stop_requested      = ZB_FALSE;
-static zb_uint8_t           is_rejoin_in_progress         = ZB_FALSE;
-static zb_uint8_t           rejoin_attempt_cnt;
+static bool           stack_initialised;
+static bool           is_rejoin_procedure_started;
+static bool           is_rejoin_stop_requested;
+static bool           is_rejoin_in_progress;
+static u8_t           rejoin_attempt_cnt;
 #if defined ZB_ED_ROLE
-static volatile zb_uint8_t  wait_for_user_input           = ZB_FALSE;
-static volatile zb_uint8_t  is_rejoin_start_scheduled     = ZB_FALSE;
+static volatile bool  wait_for_user_input;
+static volatile bool  is_rejoin_start_scheduled;
 #endif
 
 /* Forward declarations. */
 static void rejoin_the_network(zb_uint8_t param);
 static void start_network_rejoin(void);
-static void stop_network_rejoin(zb_uint8_t was_scheduled);
+static void stop_network_rejoin(bool was_scheduled);
 
 /**@brief Function to set the Erase persistent storage
  *        depending on the erase pin
@@ -93,26 +94,11 @@ int to_hex_str(char *out, u16_t out_size, const u8_t *in,
 	return bytes_written;
 }
 
-int ieee_addr_to_str(char *str_buf, uint16_t buf_len,
+int ieee_addr_to_str(char *str_buf, u16_t buf_len,
 		     const zb_ieee_addr_t addr)
 {
 	return to_hex_str(str_buf, buf_len, (const u8_t *)addr,
 			  sizeof(zb_ieee_addr_t), true);
-}
-
-u8_t parse_hex_digit(const char c)
-{
-	u8_t result = 0xff;
-
-	if ((c >= '0') && (c <= '9')) {
-		result = c - '0';
-	} else if ((c >= 'a') && (c <= 'f')) {
-		result = c - 'a' + 10;
-	} else if ((c >= 'A') && (c <= 'F')) {
-		result = c - 'A' + 10;
-	}
-
-	return result;
 }
 
 bool parse_hex_str(char const *in_str, u8_t in_str_len, u8_t *out_buff,
@@ -141,9 +127,9 @@ bool parse_hex_str(char const *in_str, u8_t in_str_len, u8_t *out_buff,
 	memset(out_buff, 0, out_buff_size);
 
 	while (i < in_str_len) {
-		u8_t nibble = parse_hex_digit(*in_str);
+		u8_t nibble;
 
-		if (nibble > 0x0f) {
+		if (char2hex(*in_str, &nibble)) {
 			break;
 		}
 
@@ -230,7 +216,7 @@ zb_ret_t zigbee_default_signal_handler(zb_bufid_t bufid)
 		 * Next step: perform BDB initialization procedure,
 		 *            (see BDB specification section 7.1).
 		 */
-		stack_initialised = ZB_TRUE;
+		stack_initialised = true;
 		LOG_INF("Zigbee stack initialized");
 		comm_status = bdb_start_top_level_commissioning(
 			ZB_BDB_INITIALIZATION);
@@ -293,19 +279,16 @@ zb_ret_t zigbee_default_signal_handler(zb_bufid_t bufid)
 			/* Device has joined the network so stop the network
 			 * rejoin procedure.
 			 */
-			stop_network_rejoin(ZB_FALSE);
-			LOG_INF(
-				"Joined network successfully on reboot signal (Extended PAN ID: %s, PAN ID: 0x%04hx)",
+			stop_network_rejoin(false);
+			LOG_INF("Joined network successfully on reboot signal (Extended PAN ID: %s, PAN ID: 0x%04hx)",
 				ieee_addr_buf,
 				ZB_PIBCACHE_PAN_ID());
 		} else {
 			if (role != ZB_NWK_DEVICE_TYPE_COORDINATOR) {
-				LOG_INF(
-					"Unable to join the network, start network steering");
+				LOG_INF("Unable to join the network, start network steering");
 				start_network_rejoin();
 			} else {
-				LOG_ERR(
-					"Failed to initialize Zigbee stack using NVRAM data (status: %d)",
+				LOG_ERR("Failed to initialize Zigbee stack using NVRAM data (status: %d)",
 					status);
 			}
 		}
@@ -344,7 +327,7 @@ zb_ret_t zigbee_default_signal_handler(zb_bufid_t bufid)
 			 * rejoin procedure.
 			 */
 			if (role != ZB_NWK_DEVICE_TYPE_COORDINATOR) {
-				stop_network_rejoin(ZB_FALSE);
+				stop_network_rejoin(false);
 			}
 		} else {
 			if (role != ZB_NWK_DEVICE_TYPE_COORDINATOR) {
@@ -391,8 +374,7 @@ zb_ret_t zigbee_default_signal_handler(zb_bufid_t bufid)
 				strcpy(ieee_addr_buf, "unknown");
 			}
 
-			LOG_INF(
-				"Network formed successfully, start network steering (Extended PAN ID: %s, PAN ID: 0x%04hx)",
+			LOG_INF("Network formed successfully, start network steering (Extended PAN ID: %s, PAN ID: 0x%04hx)",
 				ieee_addr_buf,
 				ZB_PIBCACHE_PAN_ID());
 			comm_status = bdb_start_top_level_commissioning(
@@ -452,8 +434,7 @@ zb_ret_t zigbee_default_signal_handler(zb_bufid_t bufid)
 		if (addr_len < 0) {
 			strcpy(ieee_addr_buf, "unknown");
 		}
-		LOG_INF(
-			"Child left the network (long: %s, rejoin flag: %d)",
+		LOG_INF("Child left the network (long: %s, rejoin flag: %d)",
 			ieee_addr_buf,
 			leave_ind_params->rejoin);
 		break;
@@ -493,8 +474,7 @@ zb_ret_t zigbee_default_signal_handler(zb_bufid_t bufid)
 		if (addr_len < 0) {
 			strcpy(ieee_addr_buf, "unknown");
 		}
-		LOG_INF(
-			"Device update received (short: 0x%04hx, long: %s, status: %d)",
+		LOG_INF("Device update received (short: 0x%04hx, long: %s, status: %d)",
 			update_params->short_addr,
 			ieee_addr_buf,
 			update_params->status);
@@ -521,8 +501,7 @@ zb_ret_t zigbee_default_signal_handler(zb_bufid_t bufid)
 			ZB_ZDO_SIGNAL_GET_PARAMS(
 				sig_hndler,
 				zb_zdo_signal_device_annce_params_t);
-		LOG_INF(
-			"New device commissioned or rejoined (short: 0x%04hx)",
+		LOG_INF("New device commissioned or rejoined (short: 0x%04hx)",
 			dev_annce_params->device_short_addr);
 		break;
 	}
@@ -684,8 +663,8 @@ static void rejoin_the_network(zb_uint8_t param)
 
 	if (stack_initialised && is_rejoin_procedure_started) {
 		if (is_rejoin_stop_requested) {
-			is_rejoin_procedure_started = ZB_FALSE;
-			is_rejoin_stop_requested = ZB_FALSE;
+			is_rejoin_procedure_started = false;
+			is_rejoin_stop_requested = false;
 
 #if defined ZB_ED_ROLE
 			LOG_INF("Network rejoin procedure stopped as %sscheduled.",
@@ -711,7 +690,7 @@ static void rejoin_the_network(zb_uint8_t param)
 								   1000));
 			ZB_ERROR_CHECK(zb_err_code);
 
-			is_rejoin_in_progress = ZB_TRUE;
+			is_rejoin_in_progress = true;
 		}
 	}
 }
@@ -734,17 +713,17 @@ static void start_network_rejoin(void)
 #elif defined ZB_ROUTER_ROLE
 	if (!ZB_JOINED() && stack_initialised) {
 #endif
-		is_rejoin_in_progress = ZB_FALSE;
+		is_rejoin_in_progress = false;
 
 		if (!is_rejoin_procedure_started) {
-			is_rejoin_procedure_started   = ZB_TRUE;
-			is_rejoin_stop_requested      = ZB_FALSE;
-			is_rejoin_in_progress         = ZB_FALSE;
+			is_rejoin_procedure_started   = true;
+			is_rejoin_stop_requested      = false;
+			is_rejoin_in_progress         = false;
 			rejoin_attempt_cnt            = 0;
 
 #if defined ZB_ED_ROLE
-			wait_for_user_input           = ZB_FALSE;
-			is_rejoin_start_scheduled     = ZB_FALSE;
+			wait_for_user_input           = false;
+			is_rejoin_start_scheduled     = false;
 
 			zb_ret_t zb_err_code = ZB_SCHEDULE_APP_ALARM(
 				stop_network_rejoin,
@@ -765,7 +744,7 @@ static void start_network_rejoin(void)
  * @param[in] was_scheduled   Zigbee flag to indicate if the function
  *                            was scheduled or called directly.
  */
-static void stop_network_rejoin(zb_uint8_t was_scheduled)
+static void stop_network_rejoin(bool was_scheduled)
 {
 	/* For Router and End Device:
 	 *   Try to stop scheduled network steering. Stop rejoin procedure
@@ -774,8 +753,8 @@ static void stop_network_rejoin(zb_uint8_t was_scheduled)
 	 * For End Device only:
 	 *   If stop_network_rejoin() was called from scheduler, the rejoin
 	 *   procedure has reached timeout, set wait_for_user_input
-	 *   to ZB_TRUE so the rejoin procedure can only be started by calling
-	 *   user_input_indicate(). If not, set wait_for_user_input to ZB_FALSE.
+	 *   to true so the rejoin procedure can only be started by calling
+	 *   user_input_indicate(). If not, set wait_for_user_input to false.
 	 */
 
 	zb_ret_t zb_err_code;
@@ -795,8 +774,8 @@ static void stop_network_rejoin(zb_uint8_t was_scheduled)
 			ZB_ALARM_ANY_PARAM);
 		if (zb_err_code == RET_OK) {
 			/* Stop rejoin procedure */
-			is_rejoin_procedure_started = ZB_FALSE;
-			is_rejoin_stop_requested = ZB_FALSE;
+			is_rejoin_procedure_started = false;
+			is_rejoin_stop_requested = false;
 #if defined ZB_ED_ROLE
 			LOG_INF("Network rejoin procedure stopped as %sscheduled.",
 				(wait_for_user_input) ? "" : "not ");
@@ -805,7 +784,7 @@ static void stop_network_rejoin(zb_uint8_t was_scheduled)
 #endif
 		} else {
 			/* Request rejoin procedure stop */
-			is_rejoin_stop_requested = ZB_TRUE;
+			is_rejoin_stop_requested = true;
 		}
 	}
 
@@ -822,7 +801,7 @@ static void stop_network_rejoin(zb_uint8_t was_scheduled)
 
 #if defined ZB_ED_ROLE
 /* Function to be scheduled when user_input_indicate() is called
- * and wait_for_user_input is ZB_TRUE.
+ * and wait_for_user_input is true.
  */
 static void start_network_rejoin_ED(zb_uint8_t param)
 {
@@ -830,7 +809,7 @@ static void start_network_rejoin_ED(zb_uint8_t param)
 	if (!ZB_JOINED() && wait_for_user_input) {
 		zb_ret_t zb_err_code;
 
-		wait_for_user_input = ZB_FALSE;
+		wait_for_user_input = false;
 		start_network_rejoin();
 
 		zb_err_code = ZB_SCHEDULE_APP_ALARM(
@@ -839,7 +818,7 @@ static void start_network_rejoin_ED(zb_uint8_t param)
 			ZB_TIME_ONE_SECOND);
 		ZB_ERROR_CHECK(zb_err_code);
 	}
-	is_rejoin_start_scheduled = ZB_FALSE;
+	is_rejoin_start_scheduled = false;
 }
 
 /* Function to be called by an application
@@ -856,7 +835,7 @@ void user_input_indicate(void)
 
 		/* Prevent scheduling multiple rejoin starts */
 		if (!zb_err_code) {
-			is_rejoin_start_scheduled = ZB_TRUE;
+			is_rejoin_start_scheduled = true;
 		}
 	}
 }

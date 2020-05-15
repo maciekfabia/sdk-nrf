@@ -47,9 +47,6 @@ __weak zb_uint32_t zb_osif_sleep(zb_uint32_t sleep_tmo)
 #else
 	ZB_SET_TRACE_OFF();
 
-	/* Disable Zigbee stack-related peripherals to save energy. */
-	/*zb_osif_priph_disable();*/
-
 	/* Lock timer value from updating during sleep period. */
 	ZVUNUSED(atomic_set((atomic_t *)&is_sleeping, 1));
 

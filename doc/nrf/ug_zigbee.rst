@@ -10,10 +10,12 @@ The |NCS| provides support for developing applications using the Zigbee protocol
 Introduction
 ************
 
-Zigbee is a portable, low-power software networking protocol that provides connectivity over 802.15.4-based mesh network.
+Zigbee is a portable, low-power software networking protocol that provides connectivity over an 802.15.4-based mesh network.
 It also defines an application layer that provides interoperability among all vendors.
 
-In combination with Zephyr RTOS and |NCS|, Zigbee allows for easy development of low-power connected solutions.
+In combination with |NCS| and the integrated Zephyr RTOS, Zigbee allows for easy development of low-power connected solutions.
+
+For more information about Zigbee, visit the `Zigbee Alliance`_ page and read `Zigbee Specification`_.
 
 .. _zigbee_ug_supported features:
 
@@ -40,6 +42,7 @@ This library is available in `nrfxlib`_.
 
 The OSIF subsystem acts as the linking layer between the ZBOSS stack and |NCS|.
 It implements a series of functions used by ZBOSS and is included in the |NCS|'s Zigbee subsystem.
+The files that handle the OSIF integration are located in :file:`subsys\zigbee\osif`.
 
 Configuration
 *************
@@ -55,6 +58,8 @@ After that, you have to define the Zigbee device role for the Zigbee application
 
 Setting any of these options enables the respective ZBOSS role library.
 This is needed because end devices use different libraries than routers and coordinators.
+
+For instructions about how to set Kconfig options, see :ref:`configure_application`.
 
 Additional options
 ==================
@@ -79,26 +84,24 @@ Stack configuration options
 ---------------------------
 
 Zigbee is initialized after Zephyr's kernel start.
-The ZBOSS stack works on a separate Zephyr thread that is created and started with ``zigbee_enable()``.
+The ZBOSS stack works on a separate Zephyr thread that is created and started with :cpp:func:`zigbee_enable`.
 This function must be called by the application.
 
-ZBOSS's thread can be configured using the following options:
+The ZBOSS thread can be configured using the following options:
 
 * :option:`CONFIG_ZBOSS_DEFAULT_THREAD_PRIORITY` - Defines thread priority; set to 3 by default.
 * :option:`CONFIG_ZBOSS_DEFAULT_THREAD_STACK_SIZE` - Defines the size of the thread stack; set to 2048 by default.
 
-For stack logging options, see the following section.
-
 Custom logging per module
 -------------------------
 
-Logging is handled with Zephyr's ``CONFIG_LOG`` option.
+Logging is handled with the :option:`CONFIG_LOG` option.
 This option enables logging for both the stack and Zephyr's :ref:`zephyr:logging_api` API.
 
 Stack logs
 ~~~~~~~~~~
 
-The stack logs are indepentent from Zephyr's :ref:`zephyr:logging_api` API.
+The stack logs are independent from Zephyr's :ref:`zephyr:logging_api` API.
 To customize them, use the following options:
 
 * :option:`CONFIG_ZBOSS_ERROR_PRINT_TO_LOG` - Allows ZBOSS to log its errors; enabled by default.
@@ -132,5 +135,7 @@ Available drivers, libraries, and samples
 *****************************************
 
 See :ref:`zigbee_samples` for the list of available Zigbee samples.
+
+
 
 .. |zboss_lib| replace:: The |NCS|'s Zigbee protocol uses the ZBOSS library, a third-party precompiled Zigbee stack.

@@ -5,13 +5,13 @@ Zigbee: Light bulb
 
 This Zigbee light bulb sample demonstrates a simple light bulb whose brightness can be regulated by a different device.
 
-You can use this sample together with :ref:`Zigbee network coordinator <zigbee_network_coordinator_sample>` and Zigbee light switch to set up a basic Zigbee network.
+You can use this sample together with the :ref:`Zigbee network coordinator <zigbee_network_coordinator_sample>` and Zigbee light switch to set up a basic Zigbee network.
 
 Overview
 ********
 
 The Zigbee light bulb sample assumes the Zigbee Router role and implements the Dimmable Light profile.
-This profile allows to change the brightness level of a LED on the light bulb development kit.
+This profile allows to change the brightness level of a LED on the development kit that runs the light bulb sample.
 
 In the default sample configuration, the changes to the light bulb brightness are reflected on LED 4.
 
@@ -21,36 +21,25 @@ Requirements
 * One or more of the following development kits:
 
   * |nRF52840DK|
-  * |nRF52840Dongle|
   * |nRF52833DK|
 
-* The :ref:`Zigbee network coordinator <zigbee_network_coordinator_sample>` application programmed on one separate device.
-* The Zigbee light switch application programmed on one or more separate devices.
+* The :ref:`Zigbee network coordinator <zigbee_network_coordinator_sample>` sample programmed on one separate device.
+* The Zigbee light switch sample programmed on one or more separate devices.
 
 You can mix different development kits.
 
 User interface
 **************
 
-LED 1 and LED 2:
-    Indicates the |BLE| status:
-
-    * Blinking - |BLE| advertising ongoing.
-    * Slow blinking (period of 200 ms when on, period of 800 ms when off) - Device is not connecting to a Zigbee mesh network.
-    * Rapid blinking (period of 100 ms) - Device is connecting to a Zigbee mesh network.
-    * Solid - Device is connected over |BLE|.
-
 LED 3:
-    Indicates whether the network is open or closed.
-
-    .. note::
-         When you use the light bulb on the |nRF52840Dongle|, it is the LED 3 that informs about the successful network joining.
+    Turns on when the light bulb joins the network.
 
 LED 4:
     Indicates the dimmable light option.
+    It can be controlled by another Zigbee device in the network, for example a light switch.
 
 Button 4:
-    Puts the light bulb in the Identify mode.
+    Puts the light bulb in Identify mode.
 
 Building and running
 ********************
@@ -67,19 +56,20 @@ Testing
 
 After programming the sample to your development kits, test it by performing the following steps:
 
-1. Turn on the coordinator development kit.
-   When LED 3 turns on, this development kit has become the coordinator of the Zigbee network.
-#. Turn on the light bulb development kit.
-   When LED 3 turns on on the light bulb development kit, it has become a Router inside the network.
+1. Turn on the development kit that runs the network coordinator sample.
+   When LED 3 turns on, this development kit has become the coordinator of the Zigbee network and the network is established.
+#. Turn on the development kit that runs the light bulb sample.
+   When LED 3 turns on, the light bulb has become a Router inside the network.
 
    .. tip::
         If LED 3 does not turn on, press Button 1 on the coordinator to reopen the network.
 
-#. Turn on the light switch development kit.
-   When LED 3 turns on on the light switch development kit, it has become an End Device, connected directly to the Coordinator.
-#. Wait until LED 4 on the light switch development kit turns on.
+#. Turn on the development kit that runs the light switch sample.
+   When LED 3 turns on, the light switch has become an End Device, connected directly to the Coordinator.
+#. Wait until LED 4 on the development kit that runs the light switch sample turns on.
    This LED indicates that the switch found a light bulb to control.
-#. Use buttons on the light switch development kit to control the light bulb, as described in the light switch User interface section.
+#. Use buttons on the development kit that runs the light switch sample to control the light bulb, as described in the light switch sample's user interface section.
+   The result of using the buttons is reflected on the light bulb's LED 4.
 
 
 Dependencies

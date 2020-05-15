@@ -4,14 +4,12 @@
  * SPDX-License-Identifier: LicenseRef-BSD-5-Clause-Nordic
  */
 
-/* TODO: Change function names. The 'nrf52' prefix should be removed */
-
 #include <drivers/counter.h>
 #include <soc.h>
 #include <sys/atomic.h>
 
-#include "zboss_api.h"
-#include "zb_types.h"
+#include <zboss_api.h>
+#include <zb_types.h>
 
 #define ALARM_CHANNEL_ID  0
 #define TIMER_INSTANCE    DT_NORDIC_NRF_TIMER_TIMER_3_LABEL

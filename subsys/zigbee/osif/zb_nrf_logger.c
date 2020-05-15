@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: LicenseRef-BSD-5-Clause-Nordic
  */
 
-#include "zboss_api.h"
+#include <zboss_api.h>
 
 #if defined ZB_NRF_TRACE
 

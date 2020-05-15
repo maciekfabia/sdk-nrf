@@ -20,8 +20,8 @@
  * Otherwise, whether the storage is erased is decided upon the input
  * parameter 'erase'. This behaviour is only valid if PCA10056 is used.
  *
- * @param [IN] erase Whether to erase the persistent storage in case
- *                   the erase pin is not shortened to the ground.
+ * @param[in] erase Whether to erase the persistent storage in case
+ *                  the erase pin is not shortened to the ground.
  */
 zb_void_t zigbee_erase_persistent_storage(zb_bool_t erase);
 

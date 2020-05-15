@@ -5,13 +5,12 @@
  */
 
 #include <stdlib.h>
-
 #include <kernel.h>
 #include <logging/log.h>
 #include <init.h>
 
+#include <zboss_api.h>
 #include "zb_nrf_platform.h"
-#include "zboss_api.h"
 #include "zb_nrf_crypto.h"
 
 
@@ -346,7 +345,6 @@ zb_void_t zb_reset(zb_uint8_t param)
 	LOG_ERR("Fatal error occurred");
 	k_fatal_halt(K_ERR_KERNEL_PANIC);
 }
-
 
 void zb_osif_enable_all_inter(void)
 {

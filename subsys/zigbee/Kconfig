@@ -7,6 +7,7 @@
 menuconfig ZIGBEE
 	bool "Enable Zigbee stack"
 	select FLOAT
+	select APP_LINK_WITH_ZBOSS
 	imply COUNTER
 	imply COUNTER_TIMER3
 	imply NRF_802154_RADIO_DRIVER
@@ -176,5 +177,11 @@ config RADIO_STATISTICS
 	  This option enables the radio statistics.
 
 endmenu #menu "ZBOSS osif configuration"
+
+config APP_LINK_WITH_ZIGBEE
+	bool
+	default y
+	help
+	  Link application with Zigbee subsystem
 
 endif #ZIGBEE

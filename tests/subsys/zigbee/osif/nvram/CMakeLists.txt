@@ -11,7 +11,7 @@ if (EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/dts.overlay")
 endif()
 
 include($ENV{ZEPHYR_BASE}/../nrf/cmake/boilerplate.cmake)
-include($ENV{ZEPHYR_BASE}/cmake/app/boilerplate.cmake NO_POLICY_SCOPE)
+find_package(Zephyr HINTS $ENV{ZEPHYR_BASE})
 project(zigbee_osif_nvram_test)
 
 add_definitions(-Wno-packed-bitfield-compat)

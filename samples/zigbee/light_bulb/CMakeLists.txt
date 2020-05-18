@@ -6,14 +6,6 @@
 
 cmake_minimum_required(VERSION 3.13.1)
 
-if (EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/dts.overlay")
-  set(DTC_OVERLAY_FILE "${CMAKE_CURRENT_SOURCE_DIR}/dts.overlay")
-endif()
-
-if (EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/boards/${BOARD}.overlay")
-  set(DTC_OVERLAY_FILE "${DTC_OVERLAY_FILE} ${CMAKE_CURRENT_SOURCE_DIR}/boards/${BOARD}.overlay")
-endif()
-
 include($ENV{ZEPHYR_BASE}/../nrf/cmake/boilerplate.cmake)
 find_package(Zephyr HINTS $ENV{ZEPHYR_BASE})
 

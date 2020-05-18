@@ -33,7 +33,7 @@ User interface
 
 LED 3:
     Indicates whether the network is open or closed:
-    
+
     * On - The network is open.
     * Off - The network is closed.
 

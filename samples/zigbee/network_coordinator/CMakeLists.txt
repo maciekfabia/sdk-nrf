@@ -4,14 +4,14 @@
 # SPDX-License-Identifier: LicenseRef-BSD-5-Clause-Nordic
 #
 
-cmake_minimum_required(VERSION 3.8)
+cmake_minimum_required(VERSION 3.13.1)
 
 if (EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/dts.overlay")
   set(DTC_OVERLAY_FILE "${CMAKE_CURRENT_SOURCE_DIR}/dts.overlay")
 endif()
 
 include($ENV{ZEPHYR_BASE}/../nrf/cmake/boilerplate.cmake)
-include($ENV{ZEPHYR_BASE}/cmake/app/boilerplate.cmake NO_POLICY_SCOPE)
+find_package(Zephyr HINTS $ENV{ZEPHYR_BASE})
 
 project("Zigbee coordinator")
 

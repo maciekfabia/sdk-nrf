@@ -12,13 +12,13 @@ find_package(Zephyr HINTS $ENV{ZEPHYR_BASE})
 
 zephyr_compile_definitions(CONFIG_ZBOSS_OSIF_LOG_LEVEL=LOG_LEVEL_DBG)
 
-zephyr_include_directories(${ZEPHYR_BASE}/../nrf/subsys/zigbee/osif)
-zephyr_include_directories(${ZEPHYR_BASE}/../nrfxlib/zboss/include)
-zephyr_include_directories(${ZEPHYR_BASE}/../nrfxlib/zboss/include/osif)
+zephyr_include_directories(${NRF_DIR}/subsys/zigbee/osif)
+zephyr_include_directories(${NRFXLIB_DIR}/zboss/include)
+zephyr_include_directories(${NRFXLIB_DIR}/zboss/include/osif)
 project(NONE)
 
 target_sources(app PRIVATE
   src/main.c
-  ${ZEPHYR_BASE}/../nrf/subsys/zigbee/osif/zb_nrf_crypto.c
-  ${ZEPHYR_BASE}/../nrf/subsys/zigbee/osif/nrf_ecb_driver.c
+  ${NRF_DIR}/subsys/zigbee/osif/zb_nrf_crypto.c
+  ${NRF_DIR}/subsys/zigbee/osif/nrf_ecb_driver.c
 )

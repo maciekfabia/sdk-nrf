@@ -15,7 +15,6 @@
 #include <soc.h>
 #include <drivers/pwm.h>
 #include <logging/log.h>
-#include <settings/settings.h>
 #include <dk_buttons_and_leds.h>
 
 #include <zboss_api.h>
@@ -500,11 +499,6 @@ void main(void)
 
 	/* Initialize */
 	configure_gpio();
-
-	/* Restore settings if there are any to restore */
-	if (IS_ENABLED(CONFIG_SETTINGS)) {
-		settings_load();
-	}
 
 	/* Register callback for handling ZCL commands. */
 	ZB_ZCL_REGISTER_DEVICE_CB(zcl_device_cb);

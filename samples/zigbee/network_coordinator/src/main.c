@@ -14,7 +14,6 @@
 #include <soc.h>
 #include <logging/log.h>
 #include <dk_buttons_and_leds.h>
-#include <settings/settings.h>
 
 #include <zboss_api.h>
 #include <zb_mem_config_max.h>
@@ -220,11 +219,6 @@ void main(void)
 
 	/* Initialize */
 	configure_gpio();
-
-	/* Restore settings if there are any to restore */
-	if (IS_ENABLED(CONFIG_SETTINGS)) {
-		settings_load();
-	}
 
 	/* Start Zigbee default thread */
 	zigbee_enable();

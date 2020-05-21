@@ -3,13 +3,16 @@
  *
  * SPDX-License-Identifier: LicenseRef-BSD-5-Clause-Nordic
  */
-#include <soc.h>
+#include <zephyr.h>
 #include <storage/flash_map.h>
 #include <logging/log.h>
 
 #include <zboss_api.h>
 
+#define ZB_USE_NVRAM
 #ifdef ZB_USE_NVRAM
+
+#define DT_FLASH_AREA_ZBOSS_NVRAM_SIZE 0x8000
 
 /* ZBOSS uses two virtual pages in the same size. */
 #define ZBOSS_NVRAM_PAGE_COUNT 2
@@ -33,20 +36,40 @@ static const struct flash_area *fa; /* ZBOSS nvram */
 static const struct flash_area *fa_pc; /* production config */
 #endif
 
+void dummy_callback(const struct flash_area *fa, void *user_data)
+{}
+
 void zb_osif_nvram_init(const zb_char_t *name)
 {
 	ARG_UNUSED(name);
-	int ret;
+	int ret = 0;
 
-	ret = flash_area_open(DT_FLASH_AREA_ZBOSS_NVRAM_ID, &fa);
+	k_sleep(K_SECONDS(1));
+	LOG_INF("DT_FLASH_AREA_IMAGE_SCRATCH_OFFSET = %X", DT_FLASH_AREA_IMAGE_SCRATCH_OFFSET);
+	LOG_INF("DT_FLASH_AREA_IMAGE_SCRATCH_SIZE = %X", DT_FLASH_AREA_IMAGE_SCRATCH_SIZE);
+//	LOG_INF("DT_FLASH_AREA_ZBOSS_NVRAM_OFFSET = %X", DT_FLASH_AREA_ZBOSS_NVRAM_OFFSET);
+//	LOG_INF("DT_FLASH_AREA_ZBOSS_NVRAM_SIZE = %X", DT_FLASH_AREA_ZBOSS_NVRAM_SIZE);
+	k_sleep(K_SECONDS(1));
+//	LOG_INF("DT_FLASH_AREA_PRODUCT_CONFIG_OFFSET = %X", DT_FLASH_AREA_PRODUCT_CONFIG_OFFSET);
+//	LOG_INF("DT_FLASH_AREA_PRODUCT_CONFIG_SIZE = %X", DT_FLASH_AREA_PRODUCT_CONFIG_SIZE);
+	LOG_INF("DT_FLASH_AREA_STORAGE_OFFSET = %X", DT_FLASH_AREA_STORAGE_OFFSET);
+	LOG_INF("DT_FLASH_AREA_STORAGE_SIZE == %X", DT_FLASH_AREA_STORAGE_SIZE);
+	k_sleep(K_SECONDS(5));
+
+//	LOG_INF("DT_FLASH_AREA_ZBOSS_NVRAM_ID = %d", DT_FLASH_AREA_ZBOSS_NVRAM_ID);
+	flash_area_foreach(dummy_callback, NULL);
+
+//	ret = flash_area_open(DT_FLASH_AREA_ZBOSS_NVRAM_ID, &fa);
 	if (ret) {
-		LOG_ERR("Can't open ZBOSS NVRAM flash area");
+		LOG_ERR("Can't open ZBOSS NVRAM flash area, code: %d", ret);
 	}
 
+	k_sleep(K_SECONDS(120));
+
 #ifdef ZB_PRODUCTION_CONFIG
-	ret = flash_area_open(DT_FLASH_AREA_PRODUCT_CONFIG_ID, &fa_pc);
+//	ret = flash_area_open(DT_FLASH_AREA_PRODUCT_CONFIG_ID, &fa_pc);
 	if (ret) {
-		LOG_ERR("Can't open product config flash area");
+		LOG_ERR("Can't open product config flash area, code: %d", ret);
 	}
 #endif
 }

@@ -1,0 +1,16 @@
+#include <autoconf.h>
+
+zboss_product_config:
+  size: 4096
+  placement:
+    after: [app]
+    before: [zboss_nvram]
+    
+zboss_nvram:
+  size: 32768
+  placement:
+    after: [zboss_product_config]
+    before: [settings_storage]
+    
+zboss_container:
+  span: [zboss_product_config, zboss_nvram]

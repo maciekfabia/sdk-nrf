@@ -42,6 +42,7 @@ if (CONFIG_FILE_SYSTEM)
   add_partition_manager_config(pm.yml.file_system)
 endif()
 
+add_partition_manager_config(pm.yml.zboss)
 
 # We are using partition manager if we are a child image or if we are
 # the root image and the 'partition_manager' target exists.

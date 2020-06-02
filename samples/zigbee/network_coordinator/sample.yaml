@@ -2,6 +2,10 @@ sample:
   name: Zigbee Light control
   description: Zigbee Light control - coordinator sample
 tests:
+  samples.zigbee.network_coordinator:
+    platform_whitelist: nrf52840dk_nrf52840
+    harness: zigbee
+    tags: zigbee
   zigbee.network_coordinator:
     build_only: true
     build_on_all: true

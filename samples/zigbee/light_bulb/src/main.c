@@ -24,6 +24,8 @@
 #include <zb_error_handler.h>
 #include <zb_nrf_platform.h>
 
+#include "thran.h"
+
 #define RUN_STATUS_LED                  DK_LED1
 #define RUN_LED_BLINK_INTERVAL          1000
 
@@ -523,5 +525,10 @@ void main(void)
 	while (1) {
 		dk_set_led(RUN_STATUS_LED, (++blink_status) % 2);
 		k_sleep(K_MSEC(RUN_LED_BLINK_INTERVAL));
+
+		if (blink_status % 15 == 0) {
+			thread_analyzer_run(update_thread_item);
+			list_thread_items();
+		}
 	}
 }

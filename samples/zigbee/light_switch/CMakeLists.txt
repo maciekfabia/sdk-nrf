@@ -13,6 +13,7 @@ project("Light Switch")
 # NORDIC SDK APP START
 target_sources(app PRIVATE
   src/main.c
+  src/thran.c
 )
 target_include_directories(app PRIVATE include)
 # NORDIC SDK APP END

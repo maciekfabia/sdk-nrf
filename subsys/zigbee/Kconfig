@@ -9,6 +9,7 @@ menuconfig ZIGBEE
 	imply FPU
 	select APP_LINK_WITH_ZBOSS
 	select PM_SINGLE_IMAGE
+	select NET_L2_ZIGBEE
 	imply COUNTER
 	imply COUNTER_TIMER3
 	imply NRF_802154_RADIO_DRIVER
@@ -18,6 +19,7 @@ menuconfig ZIGBEE
 	imply FLASH_PAGE_LAYOUT
 	imply FLASH_MAP
 	imply MPU_ALLOW_FLASH_WRITE
+	imply NETWORKING
 	depends on (SOC_NRF52840 || SOC_NRF52833)
 
 if ZIGBEE

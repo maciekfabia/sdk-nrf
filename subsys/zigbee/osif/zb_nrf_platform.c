@@ -585,4 +585,4 @@ void zigbee_enable(void)
 	k_thread_name_set(&zboss_thread_data, "zboss");
 }
 
-SYS_INIT(zigbee_init, POST_KERNEL, CONFIG_ZBOSS_DEFAULT_THREAD_PRIORITY);
+SYS_INIT(zigbee_init, POST_KERNEL, 81 /*CONFIG_ZBOSS_DEFAULT_THREAD_PRIORITY*/);

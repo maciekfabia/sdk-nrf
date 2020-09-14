@@ -24,6 +24,7 @@
 #include <net/net_if.h>
 #include <net/net_pkt.h>
 /*L2 layer end*/
+#include "zb_nrf_platform.h"
 
 #if !defined NRF_802154_FRAME_TIMESTAMP_ENABLED ||                             \
 	!NRF_802154_FRAME_TIMESTAMP_ENABLED
@@ -945,6 +946,8 @@ void ieee802154_init(struct net_if *iface)
 	//net_if_up(iface);
 	//net_if_flag_set(iface, NET_IF_UP);
 
+	zigbee_init();
+
 	__ASSERT_NO_MSG(radio_dev != NULL);
 	__ASSERT_NO_MSG(iface != NULL);
 
@@ -956,6 +959,7 @@ void ieee802154_init(struct net_if *iface)
 	if (IS_ENABLED(CONFIG_IEEE802154_NET_IF_NO_AUTO_START)) {
 		LOG_DBG("Interface auto start disabled.");
 		net_if_flag_set(iface, NET_IF_NO_AUTO_START);
+		state_cache.radio_state = RADIO_802154_STATE_SLEEP;
 		return;
 	}
 
@@ -972,8 +976,6 @@ void ieee802154_init(struct net_if *iface)
 	LOG_DBG("The 802.15.4 interface initialized.");
 
 	/* end copy from zb_trans_hw_init */
-
-//#if CONFIG_IEEE802154_NET_IF_NO_AUTO_START
 }
 
 enum net_verdict ieee802154_radio_handle_ack(struct net_if *iface,

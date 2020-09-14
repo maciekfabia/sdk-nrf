@@ -247,10 +247,8 @@ static void zb_app_cb_process_schedule(struct k_work *item)
 	(void)item;
 }
 
-static int zigbee_init(struct device *unused)
+int zigbee_init(void)
 {
-	ARG_UNUSED(unused);
-
 	zb_ieee_addr_t ieee_addr;
 	zb_uint32_t channel_mask;
 
@@ -584,5 +582,3 @@ void zigbee_enable(void)
 				    0, K_NO_WAIT);
 	k_thread_name_set(&zboss_thread_data, "zboss");
 }
-
-SYS_INIT(zigbee_init, POST_KERNEL, 81 /*CONFIG_ZBOSS_DEFAULT_THREAD_PRIORITY*/);

@@ -300,6 +300,8 @@ int zigbee_init(void)
 	return 0;
 }
 
+void zigbee_notify_zboss(void);
+
 static void zboss_thread(void *arg1, void *arg2, void *arg3)
 {
 	zb_ret_t zb_err_code;
@@ -314,6 +316,7 @@ static void zboss_thread(void *arg1, void *arg2, void *arg3)
 
 	while (1) {
 		zboss_main_loop_iteration();
+		//zigbee_notify_zboss();
 	}
 }
 

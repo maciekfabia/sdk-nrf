@@ -224,6 +224,7 @@ void main(void)
 
 	while (1) {
 		dk_set_led(RUN_STATUS_LED, (++blink_status) % 2);
+		//LOG_INF("Status LED: %d", blink_status % 2);
 		k_sleep(K_MSEC(RUN_LED_BLINK_INTERVAL));
 	}
 }

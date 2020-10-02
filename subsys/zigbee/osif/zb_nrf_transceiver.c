@@ -26,7 +26,7 @@ BUILD_ASSERT(IS_ENABLED(CONFIG_NET_PKT_TIMESTAMP), "Timestamp is required");
 BUILD_ASSERT(!IS_ENABLED(CONFIG_IEEE802154_NET_IF_NO_AUTO_START),
 	     "Option not supported");
 
-LOG_MODULE_DECLARE(zboss_osif, CONFIG_ZBOSS_OSIF_LOG_LEVEL);
+LOG_MODULE_DECLARE(zboss_osif, LOG_LEVEL_INF);
 
 enum ieee802154_radio_state {
 	RADIO_802154_STATE_SLEEP,
@@ -235,7 +235,7 @@ void zb_trans_set_promiscuous_mode(zb_bool_t enabled)
 /* Changes the radio state to receive. */
 void zb_trans_enter_receive(void)
 {
-	LOG_DBG("Function: %s", __func__);
+	LOG_INF("Function: %s", __func__);
 
 	radio_api->start(radio_dev);
 	state_cache.radio_state = RADIO_802154_STATE_RECEIVE;
@@ -244,7 +244,7 @@ void zb_trans_enter_receive(void)
 /* Changes the radio state to sleep. */
 void zb_trans_enter_sleep(void)
 {
-	LOG_DBG("Function: %s", __func__);
+	LOG_INF("Function: %s", __func__);
 
 	(void)radio_api->stop(radio_dev);
 	state_cache.radio_state = RADIO_802154_STATE_SLEEP;
@@ -257,7 +257,7 @@ zb_bool_t zb_trans_is_receiving(void)
 		(state_cache.radio_state == RADIO_802154_STATE_RECEIVE) ?
 			ZB_TRUE : ZB_FALSE;
 
-	LOG_DBG("Function: %s, is receiv: %d", __func__, is_receiv);
+	LOG_INF("Function: %s, is receiv: %d", __func__, is_receiv);
 	return is_receiv;
 }
 
@@ -268,7 +268,7 @@ zb_bool_t zb_trans_is_active(void)
 		(state_cache.radio_state != RADIO_802154_STATE_SLEEP) ?
 			ZB_TRUE : ZB_FALSE;
 
-	LOG_DBG("Function: %s, is active: %d", __func__, is_active);
+	LOG_INF("Function: %s, is active: %d", __func__, is_active);
 	return is_active;
 }
 
@@ -406,6 +406,8 @@ zb_time_t osif_sub_trans_timer(zb_time_t t2, zb_time_t t1)
 	return ZB_TIME_SUBTRACT(t2, t1);
 }
 
+extern struct k_mem_slab tx_pkts;
+
 zb_uint8_t zb_trans_get_next_packet(zb_bufid_t buf)
 {
 	zb_uint8_t *data_ptr;
@@ -414,6 +416,7 @@ zb_uint8_t zb_trans_get_next_packet(zb_bufid_t buf)
 	LOG_DBG("Function: %s", __func__);
 
 	if (!buf) {
+		LOG_WRN("get_next: zb_buf is 0, exiting!");
 		return 0;
 	}
 
@@ -421,8 +424,16 @@ zb_uint8_t zb_trans_get_next_packet(zb_bufid_t buf)
 	struct net_pkt *pkt = k_fifo_get(&rx_fifo, K_NO_WAIT);
 
 	if (!pkt) {
+		LOG_INF("get_next: FIFO empty, exiting");
 		return 0;
 	}
+
+	bool fifo_empty = k_fifo_is_empty(&rx_fifo);
+	uint32_t used_blocks = k_mem_slab_num_used_get(&tx_pkts);
+	LOG_INF("get_next: FIFO %s; slab: %u blocks",
+		fifo_empty ? "emptied" : "not emptied!",
+		used_blocks);
+
 
 	length = net_pkt_get_len(pkt);
 	data_ptr = zb_buf_initial_alloc(buf, length);
@@ -447,6 +458,12 @@ zb_uint8_t zb_trans_get_next_packet(zb_bufid_t buf)
 
 	/* Release the packet */
 	net_pkt_unref(pkt);
+
+	if (!k_fifo_is_empty(&rx_fifo)) {
+		zb_macll_set_rx_flag();
+		zb_macll_set_trans_int();
+		LOG_WRN("get_next: FIFO still not empty, setting zboss rx&int flag!");
+	}
 
 	return 1;
 }
@@ -518,20 +535,56 @@ enum net_verdict ieee802154_radio_handle_ack(struct net_if *iface,
 	return NET_OK;
 }
 
+static uint64_t last_notify_time;
+
 static enum net_verdict zigbee_l2_recv(struct net_if *iface,
 					struct net_pkt *pkt)
 {
 	ARG_UNUSED(iface);
 
+	bool fifo_empty = k_fifo_is_empty(&rx_fifo);
+
+	if (!fifo_empty) {
+		LOG_WRN("L2 recv: Fifo is not empty!");
+	}
 	k_fifo_put(&rx_fifo, pkt);
 
+#if 1
 	zb_macll_set_rx_flag();
 	zb_macll_set_trans_int();
 
 	/* Raise signal to indicate rx event */
 	zigbee_event_notify(ZIGBEE_EVENT_RX_DONE);
 
+	LOG_INF("L2 recv: added pkt; RX = %d, TX_INT = %d",
+		zb_macll_get_rx_flag(),
+		zb_macll_get_trans_int());
+
+	//last_notify_time = (uint64_t)k_uptime_get();
+#endif
+
 	return NET_OK;
+}
+
+
+
+void zigbee_notify_zboss(void)
+{
+	uint64_t delta = (uint64_t)k_uptime_get() - last_notify_time;
+
+	if (delta >= 20) {
+		if (!k_fifo_is_empty(&rx_fifo)) {
+			zb_macll_set_rx_flag();
+			zb_macll_set_trans_int();
+
+			/* Raise signal to indicate rx event */
+			zigbee_event_notify(ZIGBEE_EVENT_RX_DONE);
+
+			last_notify_time = (uint64_t)k_uptime_get();
+
+			LOG_INF("zibgee extra notify");
+		}
+	}
 }
 
 static enum net_l2_flags zigbee_l2_flags(struct net_if *iface)

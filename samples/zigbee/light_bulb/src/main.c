@@ -24,6 +24,8 @@
 #include <zigbee/zigbee_error_handler.h>
 #include <zb_nrf_platform.h>
 
+#include "zcl_scenes.h"
+
 #define RUN_STATUS_LED                  DK_LED1
 #define RUN_LED_BLINK_INTERVAL          1000
 
@@ -408,6 +410,8 @@ static void zcl_device_cb(zb_bufid_t bufid)
 	zb_zcl_device_callback_param_t  *device_cb_param =
 		ZB_BUF_GET_PARAM(bufid,
 				 zb_zcl_device_callback_param_t);
+        zb_zcl_device_callback_param_t * p_device_cb_param = ZB_BUF_GET_PARAM(bufid, zb_zcl_device_callback_param_t);
+
 
 	LOG_INF("%s id %hd", __func__, device_cb_param->device_cb_id);
 
@@ -458,6 +462,13 @@ static void zcl_device_cb(zb_bufid_t bufid)
 
 	default:
 		device_cb_param->status = RET_ERROR;
+
+                if (zcl_scenes_cb(bufid) == ZB_TRUE)
+                    {
+                     /* The frame was handled by the scenes cluster implementation. */
+                     p_device_cb_param->status = RET_OK;
+                    }
+
 		break;
 	}
 
@@ -514,6 +525,9 @@ void main(void)
 
 	bulb_clusters_attr_init();
 	level_control_set_value(dev_ctx.level_control_attr.current_level);
+
+        /** Initialize ZCL scene table */
+        zcl_scenes_init();
 
 	/* Start Zigbee default thread */
 	zigbee_enable();

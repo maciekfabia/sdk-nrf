@@ -300,50 +300,120 @@ static void save_state_as_scene(scene_table_on_off_entry_t * p_entry)
 
 static void recall_scene(scene_table_on_off_entry_t * p_entry)
 {
+    zb_bufid_t buf = zb_buf_get_any();
+    zb_zcl_attr_t *attr_desc;
+    zb_ret_t result;
+
     if (p_entry->on_off.has_on_off)
     {
         LOG_INF("Recall On/Off state");
-        ZB_ZCL_SET_ATTRIBUTE(
+
+        // ZB_ZCL_SET_ATTRIBUTE(
+        //     ZCL_SCENES_ENDPOINT,
+        //     ZB_ZCL_CLUSTER_ID_ON_OFF,
+        //     ZB_ZCL_CLUSTER_SERVER_ROLE,
+        //     ZB_ZCL_ATTR_ON_OFF_ON_OFF_ID,
+        //     &p_entry->on_off.on_off,
+        //     ZB_FALSE);
+
+        attr_desc = zb_zcl_get_attr_desc_a(
             ZCL_SCENES_ENDPOINT,
             ZB_ZCL_CLUSTER_ID_ON_OFF,
             ZB_ZCL_CLUSTER_SERVER_ROLE,
-            ZB_ZCL_ATTR_ON_OFF_ON_OFF_ID,
+            ZB_ZCL_ATTR_ON_OFF_ON_OFF_ID);
+
+        ZB_ZCL_INVOKE_USER_APP_SET_ATTR_WITH_RESULT(
+            buf,
+            ZCL_SCENES_ENDPOINT,
+            ZB_ZCL_CLUSTER_ID_ON_OFF,
+            attr_desc,
             &p_entry->on_off.on_off,
-            ZB_FALSE);
+            result
+            );
     }
     if (p_entry->level_control.has_current_level)
     {
         LOG_INF("Recall level control state");
-        ZB_ZCL_SET_ATTRIBUTE(
+
+        // ZB_ZCL_SET_ATTRIBUTE(
+        //     ZCL_SCENES_ENDPOINT,
+        //     ZB_ZCL_CLUSTER_ID_LEVEL_CONTROL,
+        //     ZB_ZCL_CLUSTER_SERVER_ROLE,
+        //     ZB_ZCL_ATTR_LEVEL_CONTROL_CURRENT_LEVEL_ID,
+        //     &p_entry->level_control.current_level,
+        //     ZB_FALSE);
+
+        attr_desc = zb_zcl_get_attr_desc_a(
             ZCL_SCENES_ENDPOINT,
             ZB_ZCL_CLUSTER_ID_LEVEL_CONTROL,
             ZB_ZCL_CLUSTER_SERVER_ROLE,
-            ZB_ZCL_ATTR_LEVEL_CONTROL_CURRENT_LEVEL_ID,
+            ZB_ZCL_ATTR_LEVEL_CONTROL_CURRENT_LEVEL_ID);
+
+        ZB_ZCL_INVOKE_USER_APP_SET_ATTR_WITH_RESULT(
+            buf,
+            ZCL_SCENES_ENDPOINT,
+            ZB_ZCL_CLUSTER_ID_LEVEL_CONTROL,
+            attr_desc,
             &p_entry->level_control.current_level,
-            ZB_FALSE);
+            result
+            );
     }
     if (p_entry->window_covering.has_current_position_lift_percentage)
     {
         LOG_INF("Recall window covering lift state");
-        ZB_ZCL_SET_ATTRIBUTE(
+
+        // ZB_ZCL_SET_ATTRIBUTE(
+        //     ZCL_SCENES_ENDPOINT,
+        //     ZB_ZCL_CLUSTER_ID_WINDOW_COVERING,
+        //     ZB_ZCL_CLUSTER_SERVER_ROLE,
+        //     ZB_ZCL_ATTR_WINDOW_COVERING_CURRENT_POSITION_LIFT_ID,
+        //     &p_entry->window_covering.current_position_lift_percentage,
+        //     ZB_FALSE);
+
+    attr_desc = zb_zcl_get_attr_desc_a(
+        ZCL_SCENES_ENDPOINT,
+        ZB_ZCL_CLUSTER_ID_WINDOW_COVERING,
+        ZB_ZCL_CLUSTER_SERVER_ROLE,
+        ZB_ZCL_ATTR_WINDOW_COVERING_CURRENT_POSITION_LIFT_ID);
+
+    ZB_ZCL_INVOKE_USER_APP_SET_ATTR_WITH_RESULT(
+            buf,
             ZCL_SCENES_ENDPOINT,
             ZB_ZCL_CLUSTER_ID_WINDOW_COVERING,
-            ZB_ZCL_CLUSTER_SERVER_ROLE,
-            ZB_ZCL_ATTR_WINDOW_COVERING_CURRENT_POSITION_LIFT_ID,
+            attr_desc,
             &p_entry->window_covering.current_position_lift_percentage,
-            ZB_FALSE);
+            result
+            );
     }
     if (p_entry->window_covering.has_current_position_tilt_percentage)
     {
         LOG_INF("Recall window covering tilt state");
-        ZB_ZCL_SET_ATTRIBUTE(
-            ZCL_SCENES_ENDPOINT,
-            ZB_ZCL_CLUSTER_ID_WINDOW_COVERING,
-            ZB_ZCL_CLUSTER_SERVER_ROLE,
-            ZB_ZCL_ATTR_WINDOW_COVERING_CURRENT_POSITION_TILT_ID,
-            &p_entry->window_covering.current_position_tilt_percentage,
-            ZB_FALSE);
+
+        // ZB_ZCL_SET_ATTRIBUTE(
+        //     ZCL_SCENES_ENDPOINT,
+        //     ZB_ZCL_CLUSTER_ID_WINDOW_COVERING,
+        //     ZB_ZCL_CLUSTER_SERVER_ROLE,
+        //     ZB_ZCL_ATTR_WINDOW_COVERING_CURRENT_POSITION_TILT_ID,
+        //     &p_entry->window_covering.current_position_tilt_percentage,
+        //     ZB_FALSE);
+
+    attr_desc = zb_zcl_get_attr_desc_a(
+        ZCL_SCENES_ENDPOINT,
+        ZB_ZCL_CLUSTER_ID_WINDOW_COVERING,
+        ZB_ZCL_CLUSTER_SERVER_ROLE,
+        ZB_ZCL_ATTR_WINDOW_COVERING_CURRENT_POSITION_TILT_ID);
+
+    ZB_ZCL_INVOKE_USER_APP_SET_ATTR_WITH_RESULT(
+        buf,
+        ZCL_SCENES_ENDPOINT,
+        ZB_ZCL_CLUSTER_ID_WINDOW_COVERING,
+        attr_desc,
+        &p_entry->window_covering.current_position_tilt_percentage,
+        result
+        );
     }
+
+    zb_buf_free(buf);
 }
 
 static void send_view_scene_resp(zb_bufid_t bufid, zb_uint16_t idx)

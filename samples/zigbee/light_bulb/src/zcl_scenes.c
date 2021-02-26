@@ -40,6 +40,7 @@
 #include "zcl_scenes.h"
 #include <zb_nrf_platform.h>
 #include <logging/log.h>
+#include <settings/settings.h>
 
 #define LOG_MODULE_NAME zcl_scenes
 LOG_MODULE_REGISTER(LOG_MODULE_NAME);
@@ -88,6 +89,37 @@ typedef struct resp_info_s
 } resp_info_t;
 
 resp_info_t resp_info;
+
+static int scenes_table_set(const char *name, size_t len, settings_read_cb read_cb, void *cb_arg)
+{
+    const char *next;
+    int rc;
+
+    if (settings_name_steq(name, "scenes_table", &next) && !next) {
+        if (len != sizeof(scenes_table)) {
+            return -EINVAL;
+        }
+
+        rc = read_cb(cb_arg, scenes_table, sizeof(scenes_table));
+        if (rc >= 0) {
+            return 0;
+        }
+
+        return rc;
+    }
+
+    return -ENOENT;
+}
+
+static void scenes_table_save()
+{
+    settings_save_one("scenes/scenes_table", scenes_table, sizeof(scenes_table));
+}
+
+struct settings_handler scenes_conf = {
+    .name = "scenes",
+    .h_set = scenes_table_set
+};
 
 static zb_bool_t has_cluster(zb_uint16_t cluster_id)
 {
@@ -739,6 +771,7 @@ static void update_scene_valid_value(void)
 void zcl_scenes_init(void)
 {
     scene_table_init();
+    settings_register(&scenes_conf);
 }
 
 zb_bool_t zcl_scenes_cb(zb_bufid_t bufid)
@@ -796,6 +829,7 @@ zb_bool_t zcl_scenes_cb(zb_bufid_t bufid)
                     scenes_table[idx].common.scene_id = add_scene_req->scene_id;
                     scenes_table[idx].common.transition_time = add_scene_req->transition_time;
                     *add_scene_status = ZB_ZCL_STATUS_SUCCESS;
+                    scenes_table_save();
                 }
             }
             else
@@ -848,6 +882,7 @@ zb_bool_t zcl_scenes_cb(zb_bufid_t bufid)
                 scenes_table[idx].common.group_id = ZB_ZCL_SCENES_FREE_SCENE_TABLE_RECORD;
                 LOG_INF("removing scene: entry idx %hd", idx);
                 *remove_scene_status = ZB_ZCL_STATUS_SUCCESS;
+                scenes_table_save();
             }
             else if (!zb_aps_is_endpoint_in_group(
                        remove_scene_req->group_id,
@@ -877,6 +912,7 @@ zb_bool_t zcl_scenes_cb(zb_bufid_t bufid)
             {
                 scene_table_remove_entries_by_group(remove_all_scenes_req->group_id);
                 *remove_all_scenes_status = ZB_ZCL_STATUS_SUCCESS;
+                scenes_table_save();
             }
         }
         break;
@@ -920,6 +956,7 @@ zb_bool_t zcl_scenes_cb(zb_bufid_t bufid)
                     }
                     save_state_as_scene(&scenes_table[idx]);
                     *store_scene_status = ZB_ZCL_STATUS_SUCCESS;
+                    scenes_table_save();
                 }
                 else
                 {
@@ -977,12 +1014,14 @@ zb_bool_t zcl_scenes_cb(zb_bufid_t bufid)
 
             /* Have only one endpoint */
             scene_table_remove_entries_by_group(remove_all_scenes_req->group_id);
+            scenes_table_save();
         }
         break;
 
         case ZB_ZCL_SCENES_INTERNAL_REMOVE_ALL_SCENES_ALL_ENDPOINTS_ALL_GROUPS_CB_ID:
         {
             scene_table_init();
+            scenes_table_save();
         }
         break;
 

@@ -16,6 +16,7 @@
 #include <drivers/pwm.h>
 #include <logging/log.h>
 #include <dk_buttons_and_leds.h>
+#include <settings/settings.h>
 
 #include <zboss_api.h>
 #include <zboss_api_addons.h>
@@ -516,6 +517,7 @@ void main(void)
 
 	/* Initialize */
 	configure_gpio();
+	settings_subsys_init();
 
 	/* Register callback for handling ZCL commands. */
 	ZB_ZCL_REGISTER_DEVICE_CB(zcl_device_cb);
@@ -528,6 +530,9 @@ void main(void)
 
         /** Initialize ZCL scene table */
         zcl_scenes_init();
+
+	/* Settings should be loaded after zcl_scenes_init */
+	settings_load();
 
 	/* Start Zigbee default thread */
 	zigbee_enable();

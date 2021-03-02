@@ -234,7 +234,7 @@ static zb_uint8_t * dump_fieldsets(scene_table_on_off_entry_t * p_entry, zb_uint
     return payload_ptr;
 }
 
-static zb_ret_t get_on_off_value(zb_bool_t * on_off)
+static zb_ret_t get_on_off_value(zb_uint8_t * on_off)
 {
     zb_zcl_attr_t *attr_desc = zb_zcl_get_attr_desc_a(
         ZCL_SCENES_ENDPOINT,
@@ -261,7 +261,7 @@ static zb_ret_t get_current_level_value(zb_uint8_t * current_level)
 
     if (attr_desc != NULL)
     {
-        *current_level = (zb_bool_t)ZB_ZCL_GET_ATTRIBUTE_VAL_8(attr_desc);
+        *current_level = ZB_ZCL_GET_ATTRIBUTE_VAL_8(attr_desc);
         return RET_OK;
     }
 
@@ -274,11 +274,11 @@ static zb_ret_t get_current_lift_value(zb_uint8_t * percentage)
         ZCL_SCENES_ENDPOINT,
         ZB_ZCL_CLUSTER_ID_WINDOW_COVERING,
         ZB_ZCL_CLUSTER_SERVER_ROLE,
-        ZB_ZCL_ATTR_WINDOW_COVERING_CURRENT_POSITION_LIFT_ID);
+        ZB_ZCL_ATTR_WINDOW_COVERING_CURRENT_POSITION_LIFT_PERCENTAGE_ID);
 
     if (attr_desc != NULL)
     {
-        *percentage = (zb_bool_t)ZB_ZCL_GET_ATTRIBUTE_VAL_8(attr_desc);
+        *percentage = ZB_ZCL_GET_ATTRIBUTE_VAL_8(attr_desc);
         return RET_OK;
     }
 
@@ -291,11 +291,11 @@ static zb_ret_t get_current_tilt_value(zb_uint8_t * percentage)
         ZCL_SCENES_ENDPOINT,
         ZB_ZCL_CLUSTER_ID_WINDOW_COVERING,
         ZB_ZCL_CLUSTER_SERVER_ROLE,
-        ZB_ZCL_ATTR_WINDOW_COVERING_CURRENT_POSITION_TILT_ID);
+        ZB_ZCL_ATTR_WINDOW_COVERING_CURRENT_POSITION_TILT_PERCENTAGE_ID);
 
     if (attr_desc != NULL)
     {
-        *percentage = (zb_bool_t)ZB_ZCL_GET_ATTRIBUTE_VAL_8(attr_desc);
+        *percentage = ZB_ZCL_GET_ATTRIBUTE_VAL_8(attr_desc);
         return RET_OK;
     }
 
@@ -340,14 +340,6 @@ static void recall_scene(scene_table_on_off_entry_t * p_entry)
     {
         LOG_INF("Recall On/Off state");
 
-        // ZB_ZCL_SET_ATTRIBUTE(
-        //     ZCL_SCENES_ENDPOINT,
-        //     ZB_ZCL_CLUSTER_ID_ON_OFF,
-        //     ZB_ZCL_CLUSTER_SERVER_ROLE,
-        //     ZB_ZCL_ATTR_ON_OFF_ON_OFF_ID,
-        //     &p_entry->on_off.on_off,
-        //     ZB_FALSE);
-
         attr_desc = zb_zcl_get_attr_desc_a(
             ZCL_SCENES_ENDPOINT,
             ZB_ZCL_CLUSTER_ID_ON_OFF,
@@ -366,14 +358,6 @@ static void recall_scene(scene_table_on_off_entry_t * p_entry)
     if (p_entry->level_control.has_current_level)
     {
         LOG_INF("Recall level control state");
-
-        // ZB_ZCL_SET_ATTRIBUTE(
-        //     ZCL_SCENES_ENDPOINT,
-        //     ZB_ZCL_CLUSTER_ID_LEVEL_CONTROL,
-        //     ZB_ZCL_CLUSTER_SERVER_ROLE,
-        //     ZB_ZCL_ATTR_LEVEL_CONTROL_CURRENT_LEVEL_ID,
-        //     &p_entry->level_control.current_level,
-        //     ZB_FALSE);
 
         attr_desc = zb_zcl_get_attr_desc_a(
             ZCL_SCENES_ENDPOINT,
@@ -394,19 +378,11 @@ static void recall_scene(scene_table_on_off_entry_t * p_entry)
     {
         LOG_INF("Recall window covering lift state");
 
-        // ZB_ZCL_SET_ATTRIBUTE(
-        //     ZCL_SCENES_ENDPOINT,
-        //     ZB_ZCL_CLUSTER_ID_WINDOW_COVERING,
-        //     ZB_ZCL_CLUSTER_SERVER_ROLE,
-        //     ZB_ZCL_ATTR_WINDOW_COVERING_CURRENT_POSITION_LIFT_ID,
-        //     &p_entry->window_covering.current_position_lift_percentage,
-        //     ZB_FALSE);
-
     attr_desc = zb_zcl_get_attr_desc_a(
         ZCL_SCENES_ENDPOINT,
         ZB_ZCL_CLUSTER_ID_WINDOW_COVERING,
         ZB_ZCL_CLUSTER_SERVER_ROLE,
-        ZB_ZCL_ATTR_WINDOW_COVERING_CURRENT_POSITION_LIFT_ID);
+        ZB_ZCL_ATTR_WINDOW_COVERING_CURRENT_POSITION_LIFT_PERCENTAGE_ID);
 
     ZB_ZCL_INVOKE_USER_APP_SET_ATTR_WITH_RESULT(
             buf,
@@ -421,19 +397,11 @@ static void recall_scene(scene_table_on_off_entry_t * p_entry)
     {
         LOG_INF("Recall window covering tilt state");
 
-        // ZB_ZCL_SET_ATTRIBUTE(
-        //     ZCL_SCENES_ENDPOINT,
-        //     ZB_ZCL_CLUSTER_ID_WINDOW_COVERING,
-        //     ZB_ZCL_CLUSTER_SERVER_ROLE,
-        //     ZB_ZCL_ATTR_WINDOW_COVERING_CURRENT_POSITION_TILT_ID,
-        //     &p_entry->window_covering.current_position_tilt_percentage,
-        //     ZB_FALSE);
-
     attr_desc = zb_zcl_get_attr_desc_a(
         ZCL_SCENES_ENDPOINT,
         ZB_ZCL_CLUSTER_ID_WINDOW_COVERING,
         ZB_ZCL_CLUSTER_SERVER_ROLE,
-        ZB_ZCL_ATTR_WINDOW_COVERING_CURRENT_POSITION_TILT_ID);
+        ZB_ZCL_ATTR_WINDOW_COVERING_CURRENT_POSITION_TILT_PERCENTAGE_ID);
 
     ZB_ZCL_INVOKE_USER_APP_SET_ATTR_WITH_RESULT(
         buf,
@@ -725,9 +693,10 @@ static void update_scene_valid_value(void)
 
         if (scenes_table[idx].on_off.has_on_off)
         {
-            zb_bool_t on_off;
+            zb_uint8_t on_off;
+
             (void)get_on_off_value(&on_off);
-            if (on_off != scenes_table[idx].on_off.has_on_off)
+            if (on_off != scenes_table[idx].on_off.on_off)
             {
                 (void)set_scene_valid_value(ZB_FALSE);
                 return;
@@ -737,6 +706,7 @@ static void update_scene_valid_value(void)
         if (scenes_table[idx].level_control.has_current_level)
         {
             zb_uint8_t current_level;
+
             (void)get_current_level_value(&current_level);
             if (current_level != scenes_table[idx].level_control.current_level)
             {
